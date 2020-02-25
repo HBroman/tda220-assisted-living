@@ -3,6 +3,7 @@ package application;
 import java.awt.event.ActionListener;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.stage.Stage;
@@ -20,16 +21,29 @@ import javafx.scene.layout.VBox;
 public class Main extends Application {
 
 	TextField lock_status;
-
+	AccessToken token; 
+	Authentication auth;
+	
 	@Override
 	public void start(Stage primaryStage) {
+		auth = new Authentication();
 		try {
 
 			Dashboard dash = new Dashboard(this);
 			TabPane tabPane = new TabPane();
 
-			Authentication auth = new Authentication();
-			auth.authenticate("Friend","5678");
+			// login window
+			Platform.setImplicitExit(false); // make sure application doesn't exit when we close popup
+			Stage popup = new Stage();
+			VBox loginvBox = new VBox();
+			Scene popupscene = new Scene(loginvBox);
+
+			TextField usernamefield = new TextField("username");
+			TextField passwordfield = new TextField("password");
+			Button loginbutton = new Button("Log In");
+			loginvBox.getChildren().add(usernamefield);
+			loginvBox.getChildren().add(passwordfield);
+			loginvBox.getChildren().add(loginbutton);
 
 			// security tab
 			Tab tab1 = new Tab("Security", new Label("Security"));
@@ -48,6 +62,15 @@ public class Main extends Application {
 				}
 			});
 
+			loginbutton.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent e) {
+					if (logIn(usernamefield.getCharacters(), passwordfield.getCharacters())) {
+						popup.close();
+						Platform.setImplicitExit(true); // make sure application doesn't exit when we close popup
+					}
+				}
+			});
 			Tab tab2 = new Tab("Health", new Label("Health"));
 			Tab tab3 = new Tab("Basic", new Label("Basic"));
 
@@ -58,10 +81,13 @@ public class Main extends Application {
 			VBox vBox = new VBox(tabPane);
 			Scene scene = new Scene(vBox);
 
+			popup.setScene(popupscene);
+			popup.setTitle("Log in");
 			primaryStage.setScene(scene);
 			primaryStage.setTitle("Assisted Living Dashboard");
 
 			primaryStage.show();
+			popup.show();
 			/*
 			 * BorderPane root = new BorderPane(); Scene scene = new Scene(root,400,400);
 			 * scene.getStylesheets().add(getClass().getResource("application.css").
@@ -77,6 +103,15 @@ public class Main extends Application {
 			lock_status.setText("Unlocked");
 		else
 			lock_status.setText("Locked");
+	}
+
+	private boolean logIn(CharSequence user, CharSequence pass) {
+		String username = user.toString();
+		System.out.println(username);
+		String password = pass.toString();
+		System.out.println(password);
+		token = auth.authenticate(username, password);
+		return true;
 	}
 
 	public static void main(String[] args) {
