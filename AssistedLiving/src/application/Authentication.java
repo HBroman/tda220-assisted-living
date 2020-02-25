@@ -11,13 +11,13 @@ public class Authentication implements AuthenticationInterface{
     Account intruderAccount = new Account("Intruder","1234",intruder);
     Account friendAccount = new Account("Friend","5678",friend);
 
-    List<Account> list = Arrays.asList(intruderAccount, friendAccount);
+    List<Account> database = Arrays.asList(intruderAccount, friendAccount);
 
     boolean login = false;
 
     public void authenticate(String username, String password){
-        for (Account element : list) {
-            if(element.username == username && element.verySecretpassword == password){
+        for (Account element : database) {
+            if(element.username == username && element.verysecretpassword == password){
                 System.out.println("Login successful");
                 login = true;
                 break;

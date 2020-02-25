@@ -5,13 +5,13 @@ public class Account {
 
     private AccessToken token;
     public String username;
-    public String verySecretpassword;
+    public String verysecretpassword;
 
 
     public Account(String name, String password, AccessToken accesstoken ) {
 
         username = name;
-        verySecretpassword = password;
+        verysecretpassword = password;
         token = accesstoken;
 
     }
