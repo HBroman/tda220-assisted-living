@@ -28,6 +28,9 @@ public class Main extends Application {
 			Dashboard dash = new Dashboard(this);
 			TabPane tabPane = new TabPane();
 
+			Authentication auth = new Authentication();
+			auth.authenticate("Friend","5678");
+
 			// security tab
 			Tab tab1 = new Tab("Security", new Label("Security"));
 
