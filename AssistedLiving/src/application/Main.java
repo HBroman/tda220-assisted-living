@@ -21,10 +21,12 @@ import javafx.scene.layout.VBox;
 public class Main extends Application {
 
 	TextField lock_status;
-
+	AccessToken token; 
+	Authentication auth;
+	
 	@Override
 	public void start(Stage primaryStage) {
-
+		auth = new Authentication();
 		try {
 
 			Dashboard dash = new Dashboard(this);
@@ -105,9 +107,10 @@ public class Main extends Application {
 
 	private boolean logIn(CharSequence user, CharSequence pass) {
 		String username = user.toString();
+		System.out.println(username);
 		String password = pass.toString();
-		// CALL AUTHENTICATIOR
-		// set this . accestoken to returned accestoken and return true
+		System.out.println(password);
+		token = auth.authenticate(username, password);
 		return true;
 	}
 

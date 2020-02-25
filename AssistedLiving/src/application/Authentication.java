@@ -15,18 +15,17 @@ public class Authentication implements AuthenticationInterface{
 
     boolean login = false;
 
-    public void authenticate(String username, String password){
+    public AccessToken authenticate(String username, String password){
         for (Account element : database) {
-            if(element.username == username && element.verysecretpassword == password){
+            if(element.username.equals(username) && element.verysecretpassword.equals(password)){
                 System.out.println("Login successful");
                 login = true;
-                break;
+                return element.token;
             }
         }
         if(!login){
             System.out.println("Login failed");
         }
-
-
+        return new AccessToken(false, false, false, false, false, false);
     }
 }

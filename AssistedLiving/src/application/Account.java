@@ -3,7 +3,7 @@ import application.AccessToken;
 
 public class Account {
 
-    private AccessToken token;
+    public AccessToken token;
     public String username;
     public String verysecretpassword;
 
