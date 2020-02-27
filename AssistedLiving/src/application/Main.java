@@ -38,7 +38,7 @@ public class Main extends Application {
 		try {
 
 			Dashboard dash = new Dashboard(this);
-			PhotoSystem photodash = new PhotoSystem(this);
+			//PhotoSystem photodash = new PhotoSystem(this);
 //			photodash.toggleLock();
 			UploadPhoto uploaddash = new UploadPhoto(this);
 			TabPane tabPane = new TabPane();
@@ -57,20 +57,21 @@ public class Main extends Application {
 			loginvBox.getChildren().add(loginbutton);
 			
 			//photo upload window --------------------------------------------------
-			Stage photoPopup = new Stage();
-			photohBox = new HBox();
-			Scene photoscene = new Scene(photohBox, 500, 300);
-			
-			//photovBox.getChildren().add(imgView);
-	        
+			/*
+			 * Stage photoPopup = new Stage(); photohBox = new HBox(); Scene photoscene =
+			 * new Scene(photohBox, 500, 300);
+			 * 
+			 * //photovBox.getChildren().add(imgView);
+			 */	        
 	        //Store Photo
 			Button uploadButton = new Button("Upload Photo");
-			photohBox.getChildren().add(uploadButton);
+			/* photohBox.getChildren().add(uploadButton); */
 			//++++++++++++++++++++++++++++++++++++++++
 	        
-	        photoPopup.setScene(photoscene);
-	        photoPopup.setTitle("Photo System");
-	        photoPopup.show();
+			/*
+			 * photoPopup.setScene(photoscene); photoPopup.setTitle("Photo System");
+			 * photoPopup.show();
+			 */
 	        
 	        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 	            @Override
@@ -122,7 +123,8 @@ public class Main extends Application {
 			tabPane.getTabs().add(tab3);
 
 			VBox vBox = new VBox(tabPane);
-			Scene scene = new Scene(vBox);
+			vBox.getChildren().add(uploadButton);
+			Scene scene = new Scene(vBox, 500, 300);
 
 			popup.setScene(popupscene);
 			popup.setTitle("Log in");
