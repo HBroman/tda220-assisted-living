@@ -6,10 +6,7 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import javafx.scene.control.ListView;
 public class PhotoStorage {
-
-	public ListView<String> lisView;
 	
 	public PhotoStorage() {
 		

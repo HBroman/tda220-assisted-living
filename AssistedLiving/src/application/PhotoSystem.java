@@ -20,7 +20,6 @@ public class PhotoSystem implements MqttCallback{
 	public PhotoSystem(Main mainPhoSys) {
 		
 		this.mainPhoSys = mainPhoSys;
-	    qosPhoSys            = 2;
 	    brokerPhoSys       = "tcp://localhost:1883"; //"tcp://mqtt.eclipse.org:1883";
 	    clientIdPhoSys     = "PhotoSystem";
 	    persistencePhoSys = new MemoryPersistence();

@@ -46,7 +46,6 @@ public class UploadPhoto implements MqttCallback{
 	public UploadPhoto(Main mainUp) {
 		
 		this.mainUp = mainUp;
-	    int qosUp             = 2;
 	    brokerUp       = "tcp://localhost:1883"; //"tcp://mqtt.eclipse.org:1883";
 	    clientIdUp     = "PhotoSystem";
 	    persistenceUp = new MemoryPersistence();

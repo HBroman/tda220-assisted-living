@@ -83,6 +83,7 @@ public class PhotoSlidShow {
                     
                 } catch (final IOException e) {
                     // handle errors here
+                	System.out.println(e.getMessage());
                 }
             }
         }
