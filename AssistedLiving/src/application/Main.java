@@ -14,15 +14,17 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
-public class Main extends Application {
+public class Main extends Application implements ActionListener {
 
-	TextField lock_status;
+	TextField lock_status ,stepcount, heartrate;
+	
 	AccessToken token; 
 	Authentication auth;
 	public void startSensors() throws MqttException {
@@ -102,6 +104,15 @@ public class Main extends Application {
 				}
 			});
 			Tab tab2 = new Tab("Health", new Label("Health"));
+			GridPane grid2 = new GridPane();
+			grid2.add(new TextField("Steps taken:"), 0, 0, 1, 1);
+			grid2.add(stepcount, 1, 0, 1, 1);
+			grid2.add(new TextField("Current Heartrate:"), 0, 1, 1, 1);
+			grid2.add(heartrate, 0, 1, 1, 1);
+			tab1.setContent(grid2); 
+			
+			
+			
 			Tab tab3 = new Tab("Basic", new Label("Basic"));
 
 			tabPane.getTabs().add(tab1);
@@ -147,5 +158,10 @@ public class Main extends Application {
 	public static void main(String[] args) {
 		launch(args);
 
+	}
+	@Override
+	public void actionPerformed(java.awt.event.ActionEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 }

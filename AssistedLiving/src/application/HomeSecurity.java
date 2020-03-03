@@ -87,11 +87,11 @@ public class HomeSecurity extends Thread implements MqttCallback {
 			publishString("Dashboard", "update/"+msgarray[1]+"/"+msgarray[2]);
 			break;
 		case "holidaymode":
-			if (msgarray[1] == "true")
+			if (msgarray[1].equals("true"))
 				holidaymode = true;
 			break;
 		case "movement":
-			if (msgarray[2] == "true" && holidaymode == true)
+			if (msgarray[2].equals("true") && holidaymode == true)
 				publishString("SendAlarm", "alarm");
 			break;
 				
