@@ -60,6 +60,8 @@ public class Main extends Application {
 			startSensors();
 			MedicalDataStorage healthStorage = new MedicalDataStorage(); //the data from the medical device
 
+			MovementDetection move = new MovementDetection();
+			move.main();
 			TabPane tabPane = new TabPane();
 
 			// login window
