@@ -16,7 +16,6 @@ public class CompositeLogicPub implements MqttCallback{
 		int qos;
 		MqttClient logicClient;
 		MemoryPersistence persistence;
-		CompositeLogicSub main;
 		ArrayList<String> composelogic = new ArrayList<String>();
 		
 		public CompositeLogicPub() {
@@ -54,15 +53,20 @@ public class CompositeLogicPub implements MqttCallback{
 	    	
 	    }
 		
-		public void toggleLock(String comlogic) {
+		public void toggleLock() {
 			String topic = "Composite logic";
+			CompositeLogicHandler hand = new CompositeLogicHandler();
 	        try {
-	        	composelogic.add(comlogic);
-	        	System.out.println("Publishing message: "+comlogic);
-	            MqttMessage message = new MqttMessage(comlogic.getBytes());
-	            message.setQos(qos);
-	            logicClient.publish(topic, message);
-	            System.out.println("Composite Logic Entered");       
+	        	MqttMessage msg = hand.doorbellRinging();
+	        	MqttMessage msg2 = hand.doorcamface();
+	        	if(msg.toString().equals("yes") && msg2.toString().equals("daughter")) {
+	        		msg.setQos(qos);
+		            msg.setRetained(true);
+		            logicClient.publish(topic,msg);      
+		            logicClient.publish(topic, msg2);
+		            System.out.println("Composite Logic Executed");
+	        	}
+	                   
 
 	        } catch(Exception me) {
 	            System.out.println("msg "+me.getMessage());

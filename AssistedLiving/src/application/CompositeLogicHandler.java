@@ -1,14 +1,12 @@
 package application;
 
 import java.util.Random;
-import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import javafx.application.Application;
 import javafx.stage.Stage;
 
 public class CompositeLogicHandler  extends Application{
-	    private MqttClient client;
 	    private Random rnd;
 
 	    public CompositeLogicHandler() {
