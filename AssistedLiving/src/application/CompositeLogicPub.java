@@ -12,34 +12,34 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 public class CompositeLogicPub implements MqttCallback{
 		
-		String brokerCom, clientIdCom;
-		int qosCom;
-		MqttClient logicClient;
-		MemoryPersistence persistenceCom;
-		ArrayList<String> composelogic = new ArrayList<String>();
+		String brokerComPub, clientIdComPub;
+		int qosComPub;
+		MqttClient logicClientComPub;
+		MemoryPersistence persistenceComPub;
+		ArrayList<String> composelogicPub = new ArrayList<String>();
 		
 		public CompositeLogicPub() {
-		    qosCom            = 2;
-		    brokerCom      = "tcp://localhost:1883"; //"tcp://mqtt.eclipse.org:1883";
-		    clientIdCom     = "Composite Logic";
-		    persistenceCom = new MemoryPersistence();
+			qosComPub            = 2;
+			brokerComPub      = "tcp://localhost:1883"; //"tcp://mqtt.eclipse.org:1883";
+			clientIdComPub     = "Composite Logic";
+			persistenceComPub = new MemoryPersistence();
 		    
 			try {
-				logicClient = new MqttClient(brokerCom, clientIdCom, persistenceCom);
+				logicClientComPub = new MqttClient(brokerComPub, clientIdComPub, persistenceComPub);
 				MqttConnectOptions connOptsCom = new MqttConnectOptions();
 		        connOptsCom.setCleanSession(true);
-		        logicClient.setCallback(this);
-		        System.out.println("Connecting to broker: "+brokerCom);
-		        logicClient.connect(connOptsCom);
+		        logicClientComPub.setCallback(this);
+		        System.out.println("Connecting to broker: "+brokerComPub);
+		        logicClientComPub.connect(connOptsCom);
 		        System.out.println("Connected");
-		        logicClient.subscribe("Logic"); // sub to lock channel
-			}catch(MqttException meCom) {
-	            System.out.println("reason "+meCom.getReasonCode());
-	            System.out.println("msg "+meCom.getMessage());
-	            System.out.println("loc "+meCom.getLocalizedMessage());
-	            System.out.println("cause "+meCom.getCause());
-	            System.out.println("excep "+meCom);
-	            meCom.printStackTrace();
+		        logicClientComPub.subscribe("Logic"); // sub to lock channel
+			}catch(MqttException meComPub) {
+	            System.out.println("reason "+meComPub.getReasonCode());
+	            System.out.println("msg "+meComPub.getMessage());
+	            System.out.println("loc "+meComPub.getLocalizedMessage());
+	            System.out.println("cause "+meComPub.getCause());
+	            System.out.println("excep "+meComPub);
+	            meComPub.printStackTrace();
 	        }
 		    
 		}
@@ -56,32 +56,31 @@ public class CompositeLogicPub implements MqttCallback{
 		public void toggleLock() {
 			String topicms = "Composite logic";
 			CompositeLogicHandler hand = new CompositeLogicHandler();
-			System.out.println("logic!");
 	        try {
 	        	MqttMessage msgCom = hand.doorbellRinging();
 	        	MqttMessage msgCom2 = hand.doorcamface();
 	        	if(msgCom.toString().equals("yes") && msgCom2.toString().equals("daughter")) {
-	        		msgCom.setQos(qosCom);
-	        		msgCom2.setQos(qosCom);
+	        		msgCom.setQos(qosComPub);
+	        		msgCom2.setQos(qosComPub);
 	        		msgCom.setRetained(true);
 	        		msgCom2.setRetained(true);
-		            logicClient.publish(topicms,msgCom);      
-		            logicClient.publish(topicms, msgCom2);
+	        		logicClientComPub.publish(topicms,msgCom);      
+	        		logicClientComPub.publish(topicms, msgCom2);
 		            System.out.println("Composite Logic Executed");
 	        	}
-	        } catch(Exception mesCom) {
-	            System.out.println("msg "+mesCom.getMessage());
-	            System.out.println("loc "+mesCom.getLocalizedMessage());
-	            System.out.println("cause "+mesCom.getCause());
-	            System.out.println("excep "+mesCom);
-	            mesCom.printStackTrace();
+	        } catch(Exception mesComUp) {
+	            System.out.println("msg "+mesComUp.getMessage());
+	            System.out.println("loc "+mesComUp.getLocalizedMessage());
+	            System.out.println("cause "+mesComUp.getCause());
+	            System.out.println("excep "+mesComUp);
+	            mesComUp.printStackTrace();
 	        }
 	        
 		}
 		
 		public void closeConnection() {
 	        try {
-	        	logicClient.disconnect();
+	        	logicClientComPub.disconnect();
 			} catch (MqttException e) {
 				e.printStackTrace();
 			}
