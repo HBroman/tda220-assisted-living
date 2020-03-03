@@ -12,64 +12,69 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 public class CompositeLogicPub implements MqttCallback{
 		
-		String broker, clientId;
-		int qos;
+		String brokerCom, clientIdCom;
+		int qosCom;
 		MqttClient logicClient;
-		MemoryPersistence persistence;
-		CompositeLogicSub main;
+		MemoryPersistence persistenceCom;
 		ArrayList<String> composelogic = new ArrayList<String>();
 		
 		public CompositeLogicPub() {
-		    int qos             = 2;
-		    String broker       = "tcp://localhost:1883"; //"tcp://mqtt.eclipse.org:1883";
-		    String clientId     = "Composite Logic";
-		    persistence = new MemoryPersistence();
+		    qosCom            = 2;
+		    brokerCom      = "tcp://localhost:1883"; //"tcp://mqtt.eclipse.org:1883";
+		    clientIdCom     = "Composite Logic";
+		    persistenceCom = new MemoryPersistence();
 		    
 			try {
-				logicClient = new MqttClient(broker, clientId, persistence);
-				MqttConnectOptions connOpts = new MqttConnectOptions();
-		        connOpts.setCleanSession(true);
+				logicClient = new MqttClient(brokerCom, clientIdCom, persistenceCom);
+				MqttConnectOptions connOptsCom = new MqttConnectOptions();
+		        connOptsCom.setCleanSession(true);
 		        logicClient.setCallback(this);
-		        System.out.println("Connecting to broker: "+broker);
-		        logicClient.connect(connOpts);
+		        System.out.println("Connecting to broker: "+brokerCom);
+		        logicClient.connect(connOptsCom);
 		        System.out.println("Connected");
 		        logicClient.subscribe("Logic"); // sub to lock channel
-			}catch(MqttException me) {
-	            System.out.println("reason "+me.getReasonCode());
-	            System.out.println("msg "+me.getMessage());
-	            System.out.println("loc "+me.getLocalizedMessage());
-	            System.out.println("cause "+me.getCause());
-	            System.out.println("excep "+me);
-	            me.printStackTrace();
+			}catch(MqttException meCom) {
+	            System.out.println("reason "+meCom.getReasonCode());
+	            System.out.println("msg "+meCom.getMessage());
+	            System.out.println("loc "+meCom.getLocalizedMessage());
+	            System.out.println("cause "+meCom.getCause());
+	            System.out.println("excep "+meCom);
+	            meCom.printStackTrace();
 	        }
 		    
 		}
 		
 		@Override
-	    public void messageArrived(String topic, MqttMessage message)
+	    public void messageArrived(String topicCom, MqttMessage messageCom)
 	            throws Exception {
-	    	System.out.println("Composite Logic Entered: " + message); 
+	    	System.out.println("Composite Logic Entered: " + messageCom); 
 	    	//main.updateLockInfo();
 	    	
 	    	
 	    }
 		
-		public void toggleLock(String comlogic) {
-			String topic = "Composite logic";
+		public void toggleLock() {
+			String topicms = "Composite logic";
+			CompositeLogicHandler hand = new CompositeLogicHandler();
+			System.out.println("logic!");
 	        try {
-	        	composelogic.add(comlogic);
-	        	System.out.println("Publishing message: "+comlogic);
-	            MqttMessage message = new MqttMessage(comlogic.getBytes());
-	            message.setQos(qos);
-	            logicClient.publish(topic, message);
-	            System.out.println("Composite Logic Entered");       
-
-	        } catch(Exception me) {
-	            System.out.println("msg "+me.getMessage());
-	            System.out.println("loc "+me.getLocalizedMessage());
-	            System.out.println("cause "+me.getCause());
-	            System.out.println("excep "+me);
-	            me.printStackTrace();
+	        	MqttMessage msgCom = hand.doorbellRinging();
+	        	MqttMessage msgCom2 = hand.doorcamface();
+	        	if(msgCom.toString().equals("yes") && msgCom2.toString().equals("daughter")) {
+	        		msgCom.setQos(qosCom);
+	        		msgCom2.setQos(qosCom);
+	        		msgCom.setRetained(true);
+	        		msgCom2.setRetained(true);
+		            logicClient.publish(topicms,msgCom);      
+		            logicClient.publish(topicms, msgCom2);
+		            System.out.println("Composite Logic Executed");
+	        	}
+	        } catch(Exception mesCom) {
+	            System.out.println("msg "+mesCom.getMessage());
+	            System.out.println("loc "+mesCom.getLocalizedMessage());
+	            System.out.println("cause "+mesCom.getCause());
+	            System.out.println("excep "+mesCom);
+	            mesCom.printStackTrace();
 	        }
 	        
 		}

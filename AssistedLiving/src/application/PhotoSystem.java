@@ -1,8 +1,5 @@
 package application;
 
-import java.io.File;
-import java.util.ArrayList;
-
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -11,52 +8,49 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
-import javafx.collections.ObservableList;
-import javafx.stage.Stage;
-
 public class PhotoSystem implements MqttCallback{
 
-	String broker, clientId;
-	int qos;
-	MqttClient photoClient;
-	MemoryPersistence persistence;
-	Main main;
+	String brokerPhoSys, clientIdPhoSys;
+	int qosPhoSys;
+	MqttClient photoClientPhoSys;
+	MemoryPersistence persistencePhoSys;
+	Main mainPhoSys;
 	
 	
-	public PhotoSystem(Main main) {
+	public PhotoSystem(Main mainPhoSys) {
 		
-		this.main = main;
-	    int qos             = 2;
-	    String broker       = "tcp://localhost:1883"; //"tcp://mqtt.eclipse.org:1883";
-	    String clientId     = "PhotoSystem";
-	    persistence = new MemoryPersistence();
+		this.mainPhoSys = mainPhoSys;
+	    qosPhoSys            = 2;
+	    brokerPhoSys       = "tcp://localhost:1883"; //"tcp://mqtt.eclipse.org:1883";
+	    clientIdPhoSys     = "PhotoSystem";
+	    persistencePhoSys = new MemoryPersistence();
 	    
 		System.out.println("== START PUBLISHER ==");
 		try {
-			photoClient = new MqttClient(broker, clientId, persistence);
+			photoClientPhoSys = new MqttClient(brokerPhoSys, clientIdPhoSys, persistencePhoSys);
 			MqttConnectOptions connOpts = new MqttConnectOptions();
 	        connOpts.setCleanSession(true);
-	        photoClient.setCallback(this);
-	        System.out.println("Connecting to Photo System: "+broker);
-	        photoClient.connect(connOpts);
+	        photoClientPhoSys.setCallback(this);
+	        System.out.println("Connecting to Photo System: "+brokerPhoSys);
+	        photoClientPhoSys.connect(connOpts);
 	        System.out.println("Connected");
-	        photoClient.subscribe("Photo"); // sub to lock channel
-		}catch(MqttException me) {
-            System.out.println("reason "+me.getReasonCode());
-            System.out.println("msg "+me.getMessage());
-            System.out.println("loc "+me.getLocalizedMessage());
-            System.out.println("cause "+me.getCause());
-            System.out.println("excep "+me);
-            me.printStackTrace();
+	        photoClientPhoSys.subscribe("Photo"); // sub to lock channel
+		}catch(MqttException mePhoSys) {
+            System.out.println("reason "+mePhoSys.getReasonCode());
+            System.out.println("msg "+mePhoSys.getMessage());
+            System.out.println("loc "+mePhoSys.getLocalizedMessage());
+            System.out.println("cause "+mePhoSys.getCause());
+            System.out.println("excep "+mePhoSys);
+            mePhoSys.printStackTrace();
         }
 	    
 	}
 	
 	@Override
-    public void messageArrived(String topic, MqttMessage message)
+    public void messageArrived(String topic, MqttMessage messagePhoSys)
             throws Exception {
-    	System.out.println("Photo received: " + message); 
-    	main.updateLockInfo();
+    	System.out.println("Photo received: " + messagePhoSys); 
+    	mainPhoSys.updateLockInfo();
     	
     	
     }
@@ -80,7 +74,7 @@ public class PhotoSystem implements MqttCallback{
 	
 	public void closeConnection() {
         try {
-        	photoClient.disconnect();
+        	photoClientPhoSys.disconnect();
 		} catch (MqttException e) {
 			e.printStackTrace();
 		}
