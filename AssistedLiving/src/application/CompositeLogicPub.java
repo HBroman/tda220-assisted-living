@@ -12,68 +12,67 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 public class CompositeLogicPub implements MqttCallback{
 		
-		String broker, clientId;
-		int qos;
+		int qosComp;
 		MqttClient logicClient;
-		MemoryPersistence persistence;
+		MemoryPersistence persistenceCom;
 		ArrayList<String> composelogic = new ArrayList<String>();
 		
 		public CompositeLogicPub() {
-		    int qos             = 2;
-		    String broker       = "tcp://localhost:1883"; //"tcp://mqtt.eclipse.org:1883";
-		    String clientId     = "Composite Logic";
-		    persistence = new MemoryPersistence();
+			qosComp             = 2;
+		    String brokerCom       = "tcp://localhost:1883"; //"tcp://mqtt.eclipse.org:1883";
+		    String clientIdCom     = "Composite Logic";
+		    persistenceCom = new MemoryPersistence();
 		    
 			try {
-				logicClient = new MqttClient(broker, clientId, persistence);
-				MqttConnectOptions connOpts = new MqttConnectOptions();
-		        connOpts.setCleanSession(true);
+				logicClient = new MqttClient(brokerCom, clientIdCom, persistenceCom);
+				MqttConnectOptions connOptsCom = new MqttConnectOptions();
+				connOptsCom.setCleanSession(true);
 		        logicClient.setCallback(this);
-		        System.out.println("Connecting to broker: "+broker);
-		        logicClient.connect(connOpts);
+		        System.out.println("Connecting to broker: "+brokerCom);
+		        logicClient.connect(connOptsCom);
 		        System.out.println("Connected");
 		        logicClient.subscribe("Logic"); // sub to lock channel
-			}catch(MqttException me) {
-	            System.out.println("reason "+me.getReasonCode());
-	            System.out.println("msg "+me.getMessage());
-	            System.out.println("loc "+me.getLocalizedMessage());
-	            System.out.println("cause "+me.getCause());
-	            System.out.println("excep "+me);
-	            me.printStackTrace();
+			}catch(MqttException mes) {
+	            System.out.println("reason "+mes.getReasonCode());
+	            System.out.println("msg "+mes.getMessage());
+	            System.out.println("loc "+mes.getLocalizedMessage());
+	            System.out.println("cause "+mes.getCause());
+	            System.out.println("excep "+mes);
+	            mes.printStackTrace();
 	        }
 		    
 		}
 		
 		@Override
-	    public void messageArrived(String topic, MqttMessage message)
+	    public void messageArrived(String topicms, MqttMessage messag)
 	            throws Exception {
-	    	System.out.println("Composite Logic Entered: " + message); 
+	    	System.out.println("Composite Logic Entered: " + messag); 
 	    	//main.updateLockInfo();
 	    	
 	    	
 	    }
 		
 		public void toggleLock() {
-			String topic = "Composite logic";
+			String topicms = "Composite logic";
 			CompositeLogicHandler hand = new CompositeLogicHandler();
 	        try {
 	        	MqttMessage msg = hand.doorbellRinging();
 	        	MqttMessage msg2 = hand.doorcamface();
 	        	if(msg.toString().equals("yes") && msg2.toString().equals("daughter")) {
-	        		msg.setQos(qos);
+	        		msg.setQos(qosComp);
 		            msg.setRetained(true);
-		            logicClient.publish(topic,msg);      
-		            logicClient.publish(topic, msg2);
+		            logicClient.publish(topicms,msg);      
+		            logicClient.publish(topicms, msg2);
 		            System.out.println("Composite Logic Executed");
 	        	}
 	                   
 
-	        } catch(Exception me) {
-	            System.out.println("msg "+me.getMessage());
-	            System.out.println("loc "+me.getLocalizedMessage());
-	            System.out.println("cause "+me.getCause());
-	            System.out.println("excep "+me);
-	            me.printStackTrace();
+	        } catch(Exception mes) {
+	            System.out.println("msg "+mes.getMessage());
+	            System.out.println("loc "+mes.getLocalizedMessage());
+	            System.out.println("cause "+mes.getCause());
+	            System.out.println("excep "+mes);
+	            mes.printStackTrace();
 	        }
 	        
 		}
