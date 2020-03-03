@@ -32,7 +32,6 @@ import javafx.stage.Stage;
 public class UploadPhoto implements MqttCallback{
 	
 	String brokerUp, clientIdUp;
-	int qos;
 	MqttClient photoClientUp;
 	MemoryPersistence persistenceUp;
 	Main mainUp;

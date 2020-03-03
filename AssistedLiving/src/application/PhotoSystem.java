@@ -11,7 +11,6 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 public class PhotoSystem implements MqttCallback{
 
 	String brokerPhoSys, clientIdPhoSys;
-	int qosPhoSys;
 	MqttClient photoClientPhoSys;
 	MemoryPersistence persistencePhoSys;
 	Main mainPhoSys;

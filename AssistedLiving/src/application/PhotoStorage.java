@@ -17,7 +17,7 @@ public class PhotoStorage {
 	    BufferedImage bImage = image;
 	    try {
 	      ImageIO.write(bImage, filextension, outputFile);
-	      System.out.println("Photo successfully uploaded!");
+	      System.out.println("Photo uploaded!");
 	    } catch (IOException e) {
 	      throw new RuntimeException(e);
 	    }
