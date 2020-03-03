@@ -1,8 +1,14 @@
 package application;
 
+import java.text.ParseException;
+import java.time.LocalDate;
 import java.util.Date;
 
 public interface MedicalDataStorageInterface {
 
-    public void addData(int steps, int pulse, Date date);
+    void addData(int steps, int pulse, LocalDate date);
+
+    double getAveragePulse() ;
+
+    int getTotalSteps();
 }

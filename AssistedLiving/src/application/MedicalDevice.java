@@ -8,10 +8,7 @@ import java.util.Random;
 
 public class MedicalDevice  {
 
-    public static final String BROKER_URL = "tcp://localhost:1883";
 
-    public static final String TOPIC_MEDICALDATA = "medicaldevice/data";
-    public static final String TOPIC_HEALTH = "medicaldevice";
 
     private MqttClient client;
 
@@ -22,7 +19,7 @@ public class MedicalDevice  {
         String clientId = MqttClient.generateClientId();
 
         try {
-            client = new MqttClient(BROKER_URL, clientId);
+            client = new MqttClient(Topics.BROKER_URL, clientId);
 
         } catch (MqttException e) {
             e.printStackTrace();
@@ -31,12 +28,12 @@ public class MedicalDevice  {
 
     }
 
-    private void start() {
+    public void start() {
 
         try {
             MqttConnectOptions options = new MqttConnectOptions();
             options.setCleanSession(false);
-            options.setWill(TOPIC_HEALTH, "Something has happened".getBytes(), 0, false);
+            options.setWill(Topics.MEDICAL_DEVICE, "Something has happened".getBytes(), 0, false);
 
             client.connect(options);
 
@@ -56,8 +53,8 @@ public class MedicalDevice  {
         }
     }
 
-    private void publishData() throws MqttException {
-        final MqttTopic dataTopic = client.getTopic(TOPIC_MEDICALDATA);
+    private void publishData(){
+        final MqttTopic dataTopic = client.getTopic(Topics.MEDICAL_DEVICE);
 
         int steps = generateSteps();
         int pulse = generatePulse();
@@ -100,11 +97,6 @@ public class MedicalDevice  {
         pulse = r.nextInt(high-low) + low;
 
         return pulse;
-    }
-
-    public static void main(String... args) throws MqttException {
-        final MedicalDevice publisher = new MedicalDevice();
-        publisher.start();
     }
 
 

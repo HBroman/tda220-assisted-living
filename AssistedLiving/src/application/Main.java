@@ -17,22 +17,48 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 public class Main extends Application {
 
 	TextField lock_status;
 	AccessToken token; 
 	Authentication auth;
-	
+	public void startSensors() throws MqttException {
+		BluetoothHub hub = new BluetoothHub();
+		MedicalDevice medDev = new MedicalDevice();
+
+
+		Thread thread1 = new Thread() {
+			public void run() {
+				medDev.start();
+
+			}
+		};
+		thread1.start();
+
+		Thread thread2 = new Thread() {
+			public void run() {
+				try {
+					hub.start();
+				} catch (MqttException e) {
+					e.printStackTrace();
+				}
+
+			}
+		};
+		thread2.start();
+	}
 	@Override
 	public void start(Stage primaryStage) {
 		auth = new Authentication();
 		try {
 
 			Dashboard dash = new Dashboard(this);
-			Collector col = new Collector();
+
+			startSensors();
 			MedicalDataStorage healthStorage = new MedicalDataStorage(); //the data from the medical device
-			col.start();
 
 			TabPane tabPane = new TabPane();
 
