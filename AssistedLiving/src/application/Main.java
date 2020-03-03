@@ -30,6 +30,10 @@ public class Main extends Application {
 		try {
 
 			Dashboard dash = new Dashboard(this);
+			Collector col = new Collector();
+			MedicalDataStorage healthStorage = new MedicalDataStorage(); //the data from the medical device
+			col.start();
+
 			TabPane tabPane = new TabPane();
 
 			// login window
