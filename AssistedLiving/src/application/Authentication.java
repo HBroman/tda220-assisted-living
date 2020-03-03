@@ -13,19 +13,15 @@ public class Authentication implements AuthenticationInterface{
 
     List<Account> database = Arrays.asList(intruderAccount, friendAccount);
 
-    boolean login = false;
 
     public AccessToken authenticate(String username, String password){
         for (Account element : database) {
             if(element.username.equals(username) && element.verysecretpassword.equals(password)){
                 System.out.println("Login successful");
-                login = true;
                 return element.token;
             }
         }
-        if(!login){
             System.out.println("Login failed");
-        }
         return new AccessToken(false, false, false, false, false, false);
     }
 }
