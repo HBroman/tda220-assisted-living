@@ -1,7 +1,5 @@
 package application;
 
-import java.util.ArrayList;
-
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -15,7 +13,6 @@ public class CompositeLogicPub implements MqttCallback{
 		int qosComp;
 		MqttClient logicClient;
 		MemoryPersistence persistenceCom;
-		ArrayList<String> composelogic = new ArrayList<String>();
 		
 		public CompositeLogicPub() {
 			qosComp             = 2;
