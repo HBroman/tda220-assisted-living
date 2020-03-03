@@ -1,14 +1,17 @@
 package application;
 
+import java.util.ArrayList;
+
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
-public class FaceRecognition implements MqttCallback, Runnable{
+public class FaceRecognition implements Runnable{
 
 	String broker, clientId;
 	int qos;
@@ -28,7 +31,6 @@ public class FaceRecognition implements MqttCallback, Runnable{
 			securityClient = new MqttClient(broker, clientId, persistence);
 			MqttConnectOptions connOpts = new MqttConnectOptions();
 			connOpts.setCleanSession(true);
-			securityClient.setCallback(this);
 			System.out.println("Locksensor connecting to broker: " + broker);
 			securityClient.connect(connOpts);
 			System.out.println("Locksensor connected");
@@ -52,37 +54,29 @@ public class FaceRecognition implements MqttCallback, Runnable{
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			// sometimes randomly simulate that someone scanned their face
 			
-		}
-	}
-	
-	@Override
-	public void messageArrived(String topic, MqttMessage message) throws Exception {
-
-		// cases to act on
-		System.out.println("Message received: " + message);
-	}
-
-	public void toggleLock() {
-		String topic = "lock";
-		String content = "toggle";
-		try {
-			System.out.println("Publishing message: " + content);
-			MqttMessage message = new MqttMessage(content.getBytes());
+			ArrayList<String> facelist = new ArrayList<String>();
+			facelist.add("daughter");
+			facelist.add("son");
+			facelist.add("friend");
+			facelist.add("intruder");
+			facelist.add("intruder");
+			facelist.add("intruder");
+			facelist.add("intruder");
+			facelist.add("intruder");
+			
+			String scannedface = facelist.get((int)(System.currentTimeMillis() % facelist.size()));
+			// sometimes randomly simulate that someone 
+			MqttMessage message = new MqttMessage(("facescanned/"+scannedface+"/"+lockid.toString()).getBytes());
 			message.setQos(qos);
-			securityClient.publish(topic, message);
-			System.out.println("Message published");
-
-		} catch (MqttException me) {
-			System.out.println("reason " + me.getReasonCode());
-			System.out.println("msg " + me.getMessage());
-			System.out.println("loc " + me.getLocalizedMessage());
-			System.out.println("cause " + me.getCause());
-			System.out.println("excep " + me);
-			me.printStackTrace();
+			try {
+				securityClient.publish("Security", message);
+			} catch (MqttPersistenceException e) {
+				e.printStackTrace();
+			} catch (MqttException e) {
+				e.printStackTrace();
+			}
 		}
-
 	}
 
 	public void closeConnection() {
@@ -95,15 +89,4 @@ public class FaceRecognition implements MqttCallback, Runnable{
 		System.exit(0);
 	}
 
-	@Override
-	public void deliveryComplete(IMqttDeliveryToken token) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void connectionLost(Throwable arg0) {
-		// TODO Auto-generated method stub
-
-	}
 }

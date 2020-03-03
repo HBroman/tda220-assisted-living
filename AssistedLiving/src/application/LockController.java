@@ -65,13 +65,13 @@ public class LockController implements MqttCallback, Runnable {
 	public void messageArrived(String topic, MqttMessage message) throws Exception {
 		String[] msgarray = message.toString().split("/");
 		switch (msgarray[0]) {
-		case: "unlock":
+		case "unlock":
 			unlock();
 		break;
-		case: "lock":
+		case "lock":
 			lock();
 			break;
-		case: "toggle":
+		case "toggle":
 			toggle();
 			break;
 		}
@@ -88,7 +88,7 @@ public class LockController implements MqttCallback, Runnable {
 		sendUpdate();
 	}
 	
-	public void toggleLock() {
+	public void toggle() {
 		if (isunlocked)
 			isunlocked = false;
 		else
