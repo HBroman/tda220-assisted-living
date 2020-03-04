@@ -16,6 +16,9 @@ public class MovementSensor implements MovementSensorInterface {
         int movement = 0;
         Random rand = new Random();
         movement = rand.nextInt(2);
+        if(movement > 0){
+            movement = 1;
+        }
         return movement;
 
     }

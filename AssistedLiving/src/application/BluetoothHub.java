@@ -84,7 +84,7 @@ public class BluetoothHub implements MqttCallback {
         thread.start();
         //dataTopic.publish(new MqttMessage(msg.getBytes()));
 
-        System.out.println("Published data. Topic: " + dataTopic.getName() + "  Message: " + msg);
+        //System.out.println("Published data. Topic: " + dataTopic.getName() + "  Message: " + msg);
     }
 
     //-----------SUBSCRIBE-------------
@@ -94,7 +94,7 @@ public class BluetoothHub implements MqttCallback {
 
         SUBmqttClient.subscribe(Topics.MEDICAL_DEVICE);
 
-        System.out.println("Subscriber is now listening to "+ Topics.MEDICAL_DEVICE);
+        //System.out.println("Subscriber is now listening to "+ Topics.MEDICAL_DEVICE);
     }
 
     @Override
@@ -104,7 +104,7 @@ public class BluetoothHub implements MqttCallback {
 
     @Override
     public void messageArrived(String s, MqttMessage mqttMessage) throws Exception {
-        System.out.println("Message arrived. Topic: " + s + "  Message: " + mqttMessage.toString());
+        //System.out.println("Message arrived. Topic: " + s + "  Message: " + mqttMessage.toString());
 
 
         String result = mqttMessage.toString();

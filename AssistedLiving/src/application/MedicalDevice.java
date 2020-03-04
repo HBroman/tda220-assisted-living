@@ -77,7 +77,7 @@ public class MedicalDevice  {
         thread.start();
         //dataTopic.publish(new MqttMessage(msg.getBytes()));
 
-        System.out.println("Published data. Topic: " + dataTopic.getName() + "  Message: " + msg);
+        //System.out.println("Published data. Topic: " + dataTopic.getName() + "  Message: " + msg);
     }
 
     public int generateSteps(){ //generates number of steps the inhabitant has taken since the last sending of data

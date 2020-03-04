@@ -45,7 +45,7 @@ public class Dashboard implements MqttCallback {
     @Override
     public void messageArrived(String topic, MqttMessage message)
             throws Exception {
-    	System.out.println("Message receiveddd: " + message);
+    	//System.out.println("Message receiveddd: " + message);
     	main.updateLockInfo();
     	
     	
