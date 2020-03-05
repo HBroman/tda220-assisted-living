@@ -15,10 +15,10 @@ public class Dashboard implements MqttCallback {
 	MemoryPersistence persistence;
 	Main main;
 	
-	public Dashboard(Main main) {
+	public Dashboard(Main main) throws MqttException {
 		this.main = main;
 	    int qos             = 2;
-	    String broker       = "tcp://localhost:1883"; //"tcp://mqtt.eclipse.org:1883";
+	    String broker       = Topics.BROKER_URL; //"tcp://mqtt.eclipse.org:1883";
 	    String clientId     = "Dashboard";
 	    persistence = new MemoryPersistence();
 	    
@@ -30,7 +30,7 @@ public class Dashboard implements MqttCallback {
         System.out.println("Connecting to broker: "+broker);
         dashClient.connect(connOpts);
         System.out.println("Connected");
-        dashClient.subscribe("lock"); // sub to lock channel
+        dashClient.subscribe(Topics.LOCK); // sub to lock channel
         } catch(MqttException me) {
             System.out.println("reason "+me.getReasonCode());
             System.out.println("msg "+me.getMessage());
@@ -39,12 +39,13 @@ public class Dashboard implements MqttCallback {
             System.out.println("excep "+me);
             me.printStackTrace();
         }
+        dashClient.subscribe(Topics.HEALTH_INFO);
 	}	
 	
     @Override
     public void messageArrived(String topic, MqttMessage message)
             throws Exception {
-    	System.out.println("Message received: " + message); 
+    	System.out.println("Message receiveddd: " + message);
     	main.updateLockInfo();
     	
     	
@@ -57,7 +58,7 @@ public class Dashboard implements MqttCallback {
             System.out.println("Publishing message: "+content);
             MqttMessage message = new MqttMessage(content.getBytes());
             message.setQos(qos);
-            dashClient.publish(topic, message);
+            dashClient.publish(Topics.LOCK, message);
             System.out.println("Message published");
             
 
