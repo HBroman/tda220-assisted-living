@@ -31,10 +31,11 @@ import javafx.stage.Stage;
 
 public class UploadPhoto implements MqttCallback{
 	
-	String brokerUp, clientIdUp;
-	MqttClient photoClientUp;
-	MemoryPersistence persistenceUp;
-	Main mainUp;
+	String broker, clientId;
+	int qos;
+	MqttClient photoClient;
+	MemoryPersistence persistence;
+	Main main;
 	ImageView myImageView;
 	private BufferedImage bufferedImage;
 	private FileChooser openFileChooser;
@@ -42,38 +43,39 @@ public class UploadPhoto implements MqttCallback{
 	private PhotoStorage phstore;
 	private String filname, filextension;
 	
-	public UploadPhoto(Main mainUp) {
+	public UploadPhoto(Main main) {
 		
-		this.mainUp = mainUp;
-	    brokerUp       = "tcp://localhost:1883"; //"tcp://mqtt.eclipse.org:1883";
-	    clientIdUp     = "PhotoSystem";
-	    persistenceUp = new MemoryPersistence();
+		this.main = main;
+	    int qos             = 2;
+	    String broker       = "tcp://localhost:1883"; //"tcp://mqtt.eclipse.org:1883";
+	    String clientId     = "PhotoSystem";
+	    persistence = new MemoryPersistence();
 	    
 		try {
-			photoClientUp = new MqttClient(brokerUp, clientIdUp, persistenceUp);
+			photoClient = new MqttClient(broker, clientId, persistence);
 			MqttConnectOptions connOpts = new MqttConnectOptions();
 	        connOpts.setCleanSession(true);
-	        photoClientUp.setCallback(this);
-	        System.out.println("Connecting to broker: "+brokerUp);
-	        photoClientUp.connect(connOpts);
+	        photoClient.setCallback(this);
+	        System.out.println("Connecting to broker: "+broker);
+	        photoClient.connect(connOpts);
 	        System.out.println("Connected");
-	        photoClientUp.subscribe("Photo"); // sub to lock channel
-		}catch(MqttException meUp) {
-            System.out.println("reason "+meUp.getReasonCode());
-            System.out.println("msg "+meUp.getMessage());
-            System.out.println("loc "+meUp.getLocalizedMessage());
-            System.out.println("cause "+meUp.getCause());
-            System.out.println("excep "+meUp);
-            meUp.printStackTrace();
+	        photoClient.subscribe("Photo"); // sub to lock channel
+		}catch(MqttException me) {
+            System.out.println("reason "+me.getReasonCode());
+            System.out.println("msg "+me.getMessage());
+            System.out.println("loc "+me.getLocalizedMessage());
+            System.out.println("cause "+me.getCause());
+            System.out.println("excep "+me);
+            me.printStackTrace();
         }
 	    
 	}
 	
 	@Override
-    public void messageArrived(String topic, MqttMessage messageUp)
+    public void messageArrived(String topic, MqttMessage message)
             throws Exception {
-    	System.out.println("Photo received: " + messageUp); 
-    	mainUp.updateLockInfo();
+    	System.out.println("Photo received: " + message); 
+    	main.updateLockInfo();
     	
     	
     }
@@ -106,11 +108,11 @@ public class UploadPhoto implements MqttCallback{
             	Stage dialogStage = new Stage();
             	dialogStage.initModality(Modality.WINDOW_MODAL);
             	Button okBtn = new Button("OK!");
-            	VBox vboxUp = new VBox(new Text("No file chosen!"), okBtn);
-            	vboxUp.setAlignment(Pos.CENTER);
-            	vboxUp.setPadding(new Insets(15));
+            	VBox vbox = new VBox(new Text("No file chosen!"), okBtn);
+            	vbox.setAlignment(Pos.CENTER);
+            	vbox.setPadding(new Insets(15));
 
-            	dialogStage.setScene(new Scene(vboxUp));
+            	dialogStage.setScene(new Scene(vbox));
             	dialogStage.show();
             	
             	okBtn.setOnAction(new EventHandler<ActionEvent>() {
@@ -136,7 +138,7 @@ public class UploadPhoto implements MqttCallback{
 	
 	public void closeConnection() {
         try {
-        	photoClientUp.disconnect();
+        	photoClient.disconnect();
 		} catch (MqttException e) {
 			e.printStackTrace();
 		}

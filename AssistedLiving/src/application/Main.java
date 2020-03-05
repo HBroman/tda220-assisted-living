@@ -117,12 +117,10 @@ public class Main extends Application {
 			});
 			Tab tab2 = new Tab("Health", new Label("Health"));
 			Tab tab3 = new Tab("Basic", new Label("Basic"));
-			Tab tab4 = new Tab("Photo",uploadButton);
 
 			tabPane.getTabs().add(tab1);
 			tabPane.getTabs().add(tab2);
 			tabPane.getTabs().add(tab3);
-			tabPane.getTabs().add(tab4);
 
 			VBox vBox = new VBox(tabPane);
 			vBox.getChildren().add(uploadButton);
