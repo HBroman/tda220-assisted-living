@@ -6,7 +6,10 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
+import javafx.scene.control.ListView;
 public class PhotoStorage {
+
+	public ListView<String> lisView;
 	
 	public PhotoStorage() {
 		
@@ -17,7 +20,7 @@ public class PhotoStorage {
 	    BufferedImage bImage = image;
 	    try {
 	      ImageIO.write(bImage, filextension, outputFile);
-	      System.out.println("Photo uploaded!");
+	      System.out.println("Photo successfully uploaded!");
 	    } catch (IOException e) {
 	      throw new RuntimeException(e);
 	    }
