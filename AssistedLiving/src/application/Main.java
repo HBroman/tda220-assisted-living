@@ -27,6 +27,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 public class Main extends Application {
 
 	Label stepcount, heartrate, lockstatus1, lockstatus2, lockstatus3, holidaystatus;
+	TextField logicfield, photofield;
 	Dashboard dash;
 	AccessToken token; 
 	Authentication auth;
@@ -208,11 +209,28 @@ public class Main extends Application {
 			healthvbox.getChildren().add(healthhbox4);
 			
 			
-			Tab tab3 = new Tab("Basic", new Label("Basic"));
+			Tab tab3 = new Tab("CompLog", new Label("CompLog"));
+			
+			Button clogbutton = new Button("Add Logic");
+			logicfield = new TextField();
+			HBox cloghbox = new HBox();
+			cloghbox.getChildren().add(clogbutton);
+			cloghbox.getChildren().add(logicfield);
+			tab3.setContent(cloghbox);
+			
+			Tab tab4 = new Tab("Photos", new Label("Photos"));
+			
+			Button photobutton = new Button("Upload Photo");
+			photofield = new TextField();
+			HBox photohbox = new HBox();
+			photohbox.getChildren().add(photobutton);
+			photohbox.getChildren().add(photofield);
+			tab4.setContent(photohbox);
 
 			tabPane.getTabs().add(tab1);
 			tabPane.getTabs().add(tab2);
 			tabPane.getTabs().add(tab3);
+			tabPane.getTabs().add(tab4);
 
 			VBox vBox = new VBox(tabPane);
 			Scene scene = new Scene(vBox);
