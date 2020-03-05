@@ -32,15 +32,15 @@ public class Main extends Application {
 	AccessToken token; 
 	Authentication auth;
 	public void startSensors() throws MqttException {
-		//BluetoothHub hub = new BluetoothHub();
-		//MedicalDevice medDev = new MedicalDevice();
+		BluetoothHub hub = new BluetoothHub();
+		MedicalDevice medDev = new MedicalDevice();
 		HomeSecurity hs = new HomeSecurity();
 		LockController lock1 = new LockController("1");
 		LockController lock2 = new LockController("2");
 		LockController lock3 = new LockController("3");
 		
 
-/*
+
 		Thread thread1 = new Thread() {
 			public void run() {
 				medDev.start();
@@ -59,7 +59,7 @@ public class Main extends Application {
 
 			}
 		};
-		//thread2.start(); */
+		//thread2.start();
 	}
 
 	@Override
@@ -95,7 +95,10 @@ public class Main extends Application {
 					if (logIn(usernamefield.getCharacters(), passwordfield.getCharacters())) {
 						popup.close();
 						Platform.setImplicitExit(true); // make sure application doesn't exit when we close popup
+						primaryStage.show();
 					}
+					else
+						System.exit(0);
 				}
 			});
 			
@@ -255,7 +258,7 @@ public class Main extends Application {
 			 service.setPeriod(Duration.seconds(1)); // refresh interval
 			 service.start();
 			*/
-			primaryStage.show();
+			
 			popup.show();
 			
 
@@ -277,6 +280,7 @@ public class Main extends Application {
 		String password = pass.toString();
 		System.out.println(password);
 		token = auth.authenticate(username, password);
+		dash.setAcessToken(token);
 		return true;
 	}
 	
