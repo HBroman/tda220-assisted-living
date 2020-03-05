@@ -100,10 +100,13 @@ public class HomeSecurity implements MqttCallback {
 			publishString("dashboard", "update/"+msgarray[1]+"/"+msgarray[2]);
 			break;
 		case "holidaymode":
-			if (msgarray[1].equals("true"))
+			if (msgarray[1].equals("on"))
 				holidaymode = true;
-			else 
+			else if (msgarray[1].equals("toggle"))
+					holidaymode = (holidaymode ? false : true);
+			else
 				holidaymode = false;
+			publishString("dashboard", "update/holidaymode/"+(holidaymode ? "true" : "false"));
 			break;
 		case "movement":
 			if (msgarray[2].equals("true") && holidaymode == true)

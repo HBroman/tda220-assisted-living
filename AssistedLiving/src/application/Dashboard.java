@@ -16,7 +16,7 @@ public class Dashboard implements MqttCallback {
 	Main main;
 	
 	int heartrate = 10, steps =5;
-	boolean isunlocked1, isunlocked2, isunlocked3;
+	boolean isunlocked1, isunlocked2, isunlocked3, isholiday;
 	
 	public Dashboard(Main main) throws MqttException {
 		this.main = main;
@@ -85,6 +85,9 @@ public class Dashboard implements MqttCallback {
 		return false;
 	}
 	
+	public boolean getIsHoliday() {
+		return isholiday;
+	}
 	
     @Override
     public void messageArrived(String topic, MqttMessage message) throws Exception {
@@ -118,8 +121,11 @@ public class Dashboard implements MqttCallback {
 					else
 						isunlocked3 = false;
 					break;
-				case "toggle" :
-					System.out.println("asdad");
+				case "holidaymode" :
+					if (msgarray[2].equals("true"))
+						isholiday = true;
+					else
+						isholiday = false;
 				}
 				break;
 			}
@@ -146,16 +152,14 @@ public class Dashboard implements MqttCallback {
         }
         
 	}
-	/*
-	public void toggleLock(int i) {
-		String topic = "lock";
-		String content = "toggle";
+	
+	public void toggleHoliday() {
+		String topic = "security";
+		String content = "holidaymode/toggle";
         try {
-            System.out.println("Publishing message: "+content);
             MqttMessage message = new MqttMessage(content.getBytes());
             message.setQos(qos);
-            client.publish(Topics.LOCK, message);
-            System.out.println("Message published");
+            publishclient.publish(topic, message);
             
 
         } catch(MqttException me) {
@@ -167,7 +171,7 @@ public class Dashboard implements MqttCallback {
             me.printStackTrace();
         }
 	}
-	*/
+	
 	public void closeConnection() {
         try {
         	receiveclient.disconnect();

@@ -26,7 +26,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 public class Main extends Application {
 
-	Label stepcount, heartrate, lockstatus1, lockstatus2, lockstatus3;
+	Label stepcount, heartrate, lockstatus1, lockstatus2, lockstatus3, holidaystatus;
 	Dashboard dash;
 	AccessToken token; 
 	Authentication auth;
@@ -114,10 +114,12 @@ public class Main extends Application {
 			Button lockbutton1 = new Button("lock1");
 			Button lockbutton2 = new Button("lock2");
 			Button lockbutton3 = new Button("lock3");
+			Button holidaybutton = new Button("H-Mode");
 			
 			lockstatus1 = new Label("N/A");
 			lockstatus2 = new Label("N/A");
 			lockstatus3 = new Label("N/A");
+			holidaystatus = new Label("N/A");
 			
 			HBox securityhbox1 = new HBox();
 			securityhbox1.getChildren().add(lockbutton1);
@@ -129,7 +131,8 @@ public class Main extends Application {
 			securityhbox3.getChildren().add(lockbutton3);
 			securityhbox3.getChildren().add(lockstatus3);
 			HBox securityhbox4 = new HBox();
-			securityhbox4.getChildren().add(refreshbutton);
+			securityhbox4.getChildren().add(holidaybutton);
+			securityhbox4.getChildren().add(holidaystatus);
 			VBox securityvbox = new VBox();
 			tab1.setContent(securityvbox);
 			
@@ -163,6 +166,13 @@ public class Main extends Application {
 				}
 			});
 
+			holidaybutton.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent e) {
+					dash.toggleHoliday();
+					updateAll();
+				}
+			});
 
 			// Health tab
 			
@@ -258,6 +268,7 @@ public class Main extends Application {
 		lockstatus1.setText(dash.getIsUnlocked(1) ? "unlocked" : "locked");
 		lockstatus2.setText(dash.getIsUnlocked(2) ? "unlocked" : "locked");
 		lockstatus3.setText(dash.getIsUnlocked(3) ? "unlocked" : "locked");
+		holidaystatus.setText(dash.getIsHoliday() ? "on" : "off");
 	}
 
 
