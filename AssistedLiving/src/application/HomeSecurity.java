@@ -17,11 +17,11 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
-public class HomeSecurity extends Thread implements MqttCallback {
+public class HomeSecurity implements MqttCallback {
 
 	String broker, clientId;
 	int qos;
-	MqttClient securityClient;
+	MqttClient publishclient, receiveclient;
 	MemoryPersistence persistence;
 	String fromlocks = "lock_out";
 	String fromdash = "security_in";
@@ -40,14 +40,33 @@ public class HomeSecurity extends Thread implements MqttCallback {
 		persistence = new MemoryPersistence();
 
 		try {
-			securityClient = new MqttClient(broker, clientId, persistence);
+			receiveclient = new MqttClient(Topics.BROKER_URL, MqttClient.generateClientId());
 			MqttConnectOptions connOpts = new MqttConnectOptions();
 			connOpts.setCleanSession(true);
-			securityClient.setCallback(this);
+			receiveclient.setCallback(this);
 			System.out.println("Connecting to broker: " + broker);
-			securityClient.connect(connOpts);
+			receiveclient.connect(connOpts);
 			System.out.println("Connected");
-			securityClient.subscribe("Security"); // sub to security channel
+			receiveclient.subscribe("security"); // sub to security channel
+
+		} catch (MqttException me) {
+			System.out.println("reason " + me.getReasonCode());
+			System.out.println("msg " + me.getMessage());
+			System.out.println("loc " + me.getLocalizedMessage());
+			System.out.println("cause " + me.getCause());
+			System.out.println("excep " + me);
+			me.printStackTrace();
+
+		}
+		
+		try {
+			publishclient = new MqttClient(Topics.BROKER_URL, MqttClient.generateClientId());
+			MqttConnectOptions connOpts = new MqttConnectOptions();
+			connOpts.setCleanSession(false);
+			publishclient.setCallback(this);
+			System.out.println("Connecting to broker: " + broker);
+			publishclient.connect(connOpts);
+			System.out.println("Connected");
 
 		} catch (MqttException me) {
 			System.out.println("reason " + me.getReasonCode());
@@ -59,68 +78,71 @@ public class HomeSecurity extends Thread implements MqttCallback {
 		}
 	}
 
-	@Override
-	public void run() {
-
-		while (true) {
-		}
-	}
 
 	@Override
 	public void messageArrived(String topic, MqttMessage message) throws Exception {
 		String[] msgarray = message.toString().split("/");
 		switch (msgarray[0]) {
 		case "lock":
-			publishString("Lock"+msgarray[1], "lock");
+			publishString(msgarray[1], "lock");
 			break;
 		case "unlock":
-			publishString("Lock"+msgarray[1], "unlock");
+			publishString(msgarray[1], "unlock");
 			break;
 		case "toggle":
-			publishString("Lock"+msgarray[1], "toggle");
+			publishString(msgarray[1], "toggle");
 			break;
 		case "facescanned":
 			if (facedb.contains(msgarray[1]))
-				publishString("Lock"+msgarray[2], "unlock");
+				publishString("lock"+msgarray[2], "unlock");
 			break;
 		case "update":
-			publishString("Dashboard", "update/"+msgarray[1]+"/"+msgarray[2]);
+			publishString("dashboard", "update/"+msgarray[1]+"/"+msgarray[2]);
 			break;
 		case "holidaymode":
 			if (msgarray[1].equals("true"))
 				holidaymode = true;
+			else 
+				holidaymode = false;
 			break;
 		case "movement":
 			if (msgarray[2].equals("true") && holidaymode == true)
-				publishString("SendAlarm", "alarm");
+				publishString("alarm", "alarm/intruder");
 			break;
 				
 		}
 		}
+
 	
 	private void publishString(String topic, String strmessage) {
-		MqttMessage message = new MqttMessage(strmessage.getBytes());
-		message.setQos(qos);
-		try {
-			securityClient.publish(topic, message);
-		} catch (MqttPersistenceException e) {
-			e.printStackTrace();
-		} catch (MqttException e) {
-			e.printStackTrace();
-		}
+        try {
+            MqttMessage message = new MqttMessage(strmessage.getBytes());
+            message.setQos(qos);
+            publishclient.publish(topic, message);
+            
+
+        } catch(MqttException me) {
+            System.out.println("reason "+me.getReasonCode());
+            System.out.println("msg "+me.getMessage());
+            System.out.println("loc "+me.getLocalizedMessage());
+            System.out.println("cause "+me.getCause());
+            System.out.println("excep "+me);
+            me.printStackTrace();
+        }
 	}
 	
 	private void lockLock(String lockid) {
-		publishString("Lock"+lockid, "lock");
+		publishString("lock"+lockid, "lock");
 	}
 
 	private void unlockLock(String lockid) {
-		publishString("Lock"+lockid, "unlock");
+		publishString("lock"+lockid, "unlock");
 	}
 
 	public void closeConnection() {
 		try {
-			securityClient.disconnect();
+			publishclient.disconnect();
+			receiveclient.disconnect();
 		} catch (MqttException e) {
 			e.printStackTrace();
 		}

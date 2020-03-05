@@ -11,9 +11,12 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 public class Dashboard implements MqttCallback {
 	String broker, clientId;
 	int qos;
-	MqttClient dashClient;
+	MqttClient receiveclient, publishclient;
 	MemoryPersistence persistence;
 	Main main;
+	
+	int heartrate = 10, steps =5;
+	boolean isunlocked1, isunlocked2, isunlocked3;
 	
 	public Dashboard(Main main) throws MqttException {
 		this.main = main;
@@ -23,14 +26,16 @@ public class Dashboard implements MqttCallback {
 	    persistence = new MemoryPersistence();
 	    
 	    try {
-        dashClient = new MqttClient(broker, clientId, persistence);
+        receiveclient = new MqttClient(Topics.BROKER_URL, MqttClient.generateClientId());
         MqttConnectOptions connOpts = new MqttConnectOptions();
         connOpts.setCleanSession(true);
-        dashClient.setCallback(this);
+        receiveclient.setCallback(this);
         System.out.println("Connecting to broker: "+broker);
-        dashClient.connect(connOpts);
+        receiveclient.connect(connOpts);
         System.out.println("Connected");
-        dashClient.subscribe(Topics.LOCK); // sub to lock channel
+        receiveclient.subscribe(Topics.LOCK); // sub to lock channel
+        receiveclient.subscribe(Topics.MEDICAL_DEVICE);
+        receiveclient.subscribe("dashboard");
         } catch(MqttException me) {
             System.out.println("reason "+me.getReasonCode());
             System.out.println("msg "+me.getMessage());
@@ -39,27 +44,96 @@ public class Dashboard implements MqttCallback {
             System.out.println("excep "+me);
             me.printStackTrace();
         }
-        dashClient.subscribe(Topics.HEALTH_INFO);
-	}	
+        receiveclient.subscribe(Topics.HEALTH_INFO);
+
+
+		try {
+			publishclient = new MqttClient(Topics.BROKER_URL, MqttClient.generateClientId());
+			MqttConnectOptions connOpts = new MqttConnectOptions();
+			connOpts.setCleanSession(false);
+			publishclient.setCallback(this);
+			System.out.println("Connecting to broker: " + broker);
+			publishclient.connect(connOpts);
+			System.out.println("Connected");
+
+		} catch (MqttException me) {
+			System.out.println("reason " + me.getReasonCode());
+			System.out.println("msg " + me.getMessage());
+			System.out.println("loc " + me.getLocalizedMessage());
+			System.out.println("cause " + me.getCause());
+			System.out.println("excep " + me);
+			me.printStackTrace();
+		}
+	}
+	public int getHeartRate() {
+		return heartrate;
+	}
+	
+	public int getSteps() {
+		return steps;
+	}
+	
+	public boolean getIsUnlocked(int lockid) {
+		switch (lockid) {
+		case 1 :
+			return isunlocked1;
+		case 2 :
+			return isunlocked2;
+		case 3 : 
+			return isunlocked3;
+	}
+		return false;
+	}
+	
 	
     @Override
-    public void messageArrived(String topic, MqttMessage message)
-            throws Exception {
-    	System.out.println("Message receiveddd: " + message);
-    	main.updateLockInfo();
-    	
-    	
+    public void messageArrived(String topic, MqttMessage message) throws Exception {
+    	System.out.println("Dashboard received: " +topic +"   "+ message);
+		String[] msgarray = message.toString().split("/");
+		System.out.println(msgarray[0]+msgarray[1]);
+		switch (topic) {
+		case Topics.MEDICAL_DEVICE:
+			steps = Integer.valueOf(msgarray[0]);
+			heartrate = Integer.valueOf(msgarray[1]);
+			break;
+		case "dashboard" :
+			switch (msgarray[0]) {
+			case "update":
+				switch (msgarray[1]) {
+				case "lock1" :
+					if (msgarray[2].equals("unlocked"))
+						isunlocked1 = true;
+					else
+						isunlocked1 = false;
+					break;
+				case "lock2" :
+					if (msgarray[2].equals("unlocked"))
+						isunlocked2 = true;
+					else
+						isunlocked2 = false;
+					break;
+				case "lock3" :
+					if (msgarray[2].equals("unlocked"))
+						isunlocked3 = true;
+					else
+						isunlocked3 = false;
+					break;
+				case "toggle" :
+					System.out.println("asdad");
+				}
+				break;
+			}
+		}
     }
     
-	public void toggleLock() {
-		String topic = "lock";
-		String content = "toggle";
+    
+	public void toggleLock(int lockid) {
+		String topic = "security";
+		String content = "toggle/lock" + Integer.toString(lockid);
         try {
-            System.out.println("Publishing message: "+content);
             MqttMessage message = new MqttMessage(content.getBytes());
             message.setQos(qos);
-            dashClient.publish(Topics.LOCK, message);
-            System.out.println("Message published");
+            publishclient.publish(topic, message);
             
 
         } catch(MqttException me) {
@@ -72,10 +146,31 @@ public class Dashboard implements MqttCallback {
         }
         
 	}
-	
+	/*
+	public void toggleLock(int i) {
+		String topic = "lock";
+		String content = "toggle";
+        try {
+            System.out.println("Publishing message: "+content);
+            MqttMessage message = new MqttMessage(content.getBytes());
+            message.setQos(qos);
+            client.publish(Topics.LOCK, message);
+            System.out.println("Message published");
+            
+
+        } catch(MqttException me) {
+            System.out.println("reason "+me.getReasonCode());
+            System.out.println("msg "+me.getMessage());
+            System.out.println("loc "+me.getLocalizedMessage());
+            System.out.println("cause "+me.getCause());
+            System.out.println("excep "+me);
+            me.printStackTrace();
+        }
+	}
+	*/
 	public void closeConnection() {
         try {
-			dashClient.disconnect();
+        	receiveclient.disconnect();
 		} catch (MqttException e) {
 			e.printStackTrace();
 		}

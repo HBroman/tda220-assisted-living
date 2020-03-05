@@ -8,4 +8,5 @@ public class Topics {
     public static final String BROKER_URL = "tcp://localhost:1883";
     public static final String MOVEMENT_SECURITY = "security"; // (movement/name/boolean)
     public static final String MOVEMENT_SAFETY = "safety";
+    public static final String SECURITY = "security";
 }
