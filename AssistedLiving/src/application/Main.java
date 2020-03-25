@@ -49,7 +49,40 @@ public class Main extends Application {
 			}
 		};
 		thread2.start();
+
+		Thread thread3 = new Thread() {
+			public void run() {
+				MovementDetection move = new MovementDetection();
+
+			}
+		};
+		thread3.start();
+
+		Thread thread4 = new Thread() {
+			public void run() {
+				try {
+					HomeSafety hm = new HomeSafety();
+					hm.start();
+				} catch (MqttException e) {
+					e.printStackTrace();
+				}
+
+			}
+		};
+		thread4.start();
+
+		Thread thread5 = new Thread() {
+			public void run() {
+				AlarmCommunication alarm = new AlarmCommunication();
+
+
+			}
+		};
+		thread5.start();
+
+
 	}
+
 	@Override
 	public void start(Stage primaryStage) {
 		auth = new Authentication();
@@ -59,9 +92,6 @@ public class Main extends Application {
 
 			startSensors();
 			MedicalDataStorage healthStorage = new MedicalDataStorage(); //the data from the medical device
-
-			MovementDetection move = new MovementDetection();
-			move.main();
 			TabPane tabPane = new TabPane();
 
 			// login window
