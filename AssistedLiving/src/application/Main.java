@@ -1,13 +1,18 @@
 package application;
 
 import java.awt.event.ActionListener;
+import java.util.Date;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.concurrent.ScheduledService;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.scene.Scene;
@@ -26,11 +31,13 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 public class Main extends Application {
 
-	Label stepcount, heartrate, lockstatus1, lockstatus2, lockstatus3, holidaystatus;
+	Label stepcount, heartrate, lockstatus1, lockstatus2, lockstatus3, holidaystatus, alarm_mov, alarm_smoke;
+	Text inhabitantName, inhabitantAge;
 	TextField logicfield, photofield;
 	Dashboard dash;
 	AccessToken token; 
 	Authentication auth;
+
 	public void startSensors() throws MqttException {
 		BluetoothHub hub = new BluetoothHub();
 		MedicalDevice medDev = new MedicalDevice();
@@ -141,7 +148,7 @@ public class Main extends Application {
 				}
 			});
 			
-			// security tab
+			// -------------- SECURITY TAB -----------------
 			Tab tab1 = new Tab("Security", new Label("Security"));
 
 			Button lockbutton1 = new Button("lock1");
@@ -207,14 +214,61 @@ public class Main extends Application {
 				}
 			});
 
-			// Health tab
+			// -------------- ALARM TAB -----------------
+
+			Tab tab7 = new Tab("Alarm", new Label("Alarm"));
+
+			Label alarm = new Label("No alarm now.");
+
+			HBox alarmbox = new HBox();
+			alarmbox.getChildren().add(alarm);
+
+			tab7.setContent(alarmbox);
+
+			// -------------- BASIC TAB -----------------
+			Tab tab8 = new Tab("Basics", new Label("Basics"));
+
+			Label name = new Label("Inhabitants Name: ");
+			TextField inname = new TextField("Birgit Johansson");
+			Label age = new Label("Inhabitans age: ");
+			TextField inage = new TextField("74");
+			Label caregiver = new Label("Care giver: ");
+			TextField incare = new TextField("Alfred Johansson");
+			Label healthservice = new Label("Health Service: ");
+			TextField inhealth = new TextField("Östersjukhuset");
+
+			HBox namebox = new HBox();
+			namebox.getChildren().add(name);
+			namebox.getChildren().add(inname);
+
+			HBox agebox = new HBox();
+			agebox.getChildren().add(age);
+			agebox.getChildren().add(inage);
+
+			HBox carebox = new HBox();
+			carebox.getChildren().add(caregiver);
+			carebox.getChildren().add(incare);
+
+			HBox healthbox = new HBox();
+			healthbox.getChildren().add(healthservice);
+			healthbox.getChildren().add(inhealth);
+
+			VBox basicvbox = new VBox();
+			tab8.setContent(basicvbox);
+
+			basicvbox.getChildren().add(carebox);
+			basicvbox.getChildren().add(healthbox);
+			basicvbox.getChildren().add(namebox);
+			basicvbox.getChildren().add(agebox);
+
+			// -------------- HEALTH TAB -----------------
 			
-			refreshbutton.setOnAction(new EventHandler<ActionEvent>() {
+			/*refreshbutton.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
 				public void handle(ActionEvent e) {
 					updateAll();
 				}
-			});
+			});*/
 			
 			Tab tab2 = new Tab("Health", new Label("Health"));
 			
@@ -234,13 +288,13 @@ public class Main extends Application {
 			VBox healthvbox = new VBox();
 			tab2.setContent(healthvbox);
 			
-			healthvbox.getChildren().add(refreshbutton);
+			//healthvbox.getChildren().add(refreshbutton);
 			healthvbox.getChildren().add(healthhbox1);
 			healthvbox.getChildren().add(healthhbox2);
 			healthvbox.getChildren().add(healthhbox3);
 			healthvbox.getChildren().add(healthhbox4);
-			
-			
+
+			// -------------- COMPOSITE TAB -----------------
 			Tab tab3 = new Tab("CompLog", new Label("CompLog"));
 			
 			Button clogbutton = new Button("Add Logic");
@@ -249,7 +303,8 @@ public class Main extends Application {
 			cloghbox.getChildren().add(clogbutton);
 			cloghbox.getChildren().add(logicfield);
 			tab3.setContent(cloghbox);
-			
+
+			// -------------- PHOTOS TAB -----------------
 			Tab tab4 = new Tab("Photos", new Label("Photos"));
 			
 			Button photobutton = new Button("Upload Photo");
@@ -259,10 +314,13 @@ public class Main extends Application {
 			photohbox.getChildren().add(photofield);
 			tab4.setContent(photohbox);
 
+			// -------------- REST -----------------
 			tabPane.getTabs().add(tab1);
 			tabPane.getTabs().add(tab2);
 			tabPane.getTabs().add(tab3);
 			tabPane.getTabs().add(tab4);
+			tabPane.getTabs().add(tab7);
+			tabPane.getTabs().add(tab8);
 
 			VBox vBox = new VBox(tabPane);
 			Scene scene = new Scene(vBox);
@@ -271,10 +329,11 @@ public class Main extends Application {
 			popup.setTitle("Log in");
 			primaryStage.setScene(scene);
 			primaryStage.setTitle("Assisted Living Dashboard");
-			
+
+
 			// service will refresh data every 1 sec
-			/*
-			ScheduledService<Object> service = new ScheduledService<Object>() {
+
+			/*ScheduledService<Object> service = new ScheduledService<Object>() {
 			     protected Task<Object> createTask() {
 			         return new Task<Object>() {
 			             protected Object call() {
@@ -285,8 +344,33 @@ public class Main extends Application {
 			     }
 			 };
 			 service.setPeriod(Duration.seconds(1)); // refresh interval
-			 service.start();
-			*/
+			 service.start();*/
+
+			KeyFrame update = new KeyFrame(Duration.seconds(1), event -> {
+				updateAll();
+				// update label here. You don't need to use Platform.runLater(...), because Timeline makes sure it will be called on the UI thread.
+			});
+			Timeline tl = new Timeline(update);
+			tl.setCycleCount(Timeline.INDEFINITE);
+			tl.play();
+
+
+			/*Thread updateThread = new Thread() {
+				public void run() {
+
+					while(true) {
+						updateAll();
+
+						try {
+							Thread.sleep(200);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+
+					}
+				}
+			};
+			updateThread.start();*/
 			
 			popup.show();
 			
