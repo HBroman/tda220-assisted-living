@@ -9,11 +9,11 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
-public class LockController implements MqttCallback, Runnable {
+public class LockController implements MqttCallback {
 
 	String broker, clientId;
 	int qos;
-	MqttClient securityClient;
+	MqttClient publishclient, receiveclient;
 	MemoryPersistence persistence;
 	String lockid;
 	boolean isunlocked;
@@ -28,14 +28,33 @@ public class LockController implements MqttCallback, Runnable {
 		persistence = new MemoryPersistence();
 
 		try {
-			securityClient = new MqttClient(broker, clientId, persistence);
+			receiveclient = new MqttClient(Topics.BROKER_URL, MqttClient.generateClientId());
 			MqttConnectOptions connOpts = new MqttConnectOptions();
 			connOpts.setCleanSession(true);
-			securityClient.setCallback(this);
+			receiveclient.setCallback(this);
 			System.out.println("Locksensor connecting to broker: " + broker);
-			securityClient.connect(connOpts);
+			receiveclient.connect(connOpts);
 			System.out.println("Locksensor connected");
-			securityClient.subscribe("Lock"+lockid.toString()); // sub to security channel
+			String substring = "lock"+lockid;
+			receiveclient.subscribe(substring); //
+
+		} catch (MqttException me) {
+			System.out.println("reason " + me.getReasonCode());
+			System.out.println("msg " + me.getMessage());
+			System.out.println("loc " + me.getLocalizedMessage());
+			System.out.println("cause " + me.getCause());
+			System.out.println("excep " + me);
+			me.printStackTrace();
+		}
+		
+		try {
+			publishclient = new MqttClient(Topics.BROKER_URL, MqttClient.generateClientId());
+			MqttConnectOptions connOpts = new MqttConnectOptions();
+			connOpts.setCleanSession(false);
+			publishclient.setCallback(this);
+			System.out.println("Connecting to broker: " + broker);
+			publishclient.connect(connOpts);
+			System.out.println("Connected");
 
 		} catch (MqttException me) {
 			System.out.println("reason " + me.getReasonCode());
@@ -47,18 +66,6 @@ public class LockController implements MqttCallback, Runnable {
 		}
 	}
 	
-	@Override
-	public void run() {
-		while (true) {
-			try {
-				Thread.sleep((long)(Math.random() * 1000));
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			// sometimes randomly unlock a door
-			
-		}
-	}
 	
 	
 	@Override
@@ -97,24 +104,30 @@ public class LockController implements MqttCallback, Runnable {
 	}
 
 	public void sendUpdate() {
-		publishString("security", "update/lock"+lockid.toString()+"/"+((isunlocked == true) ? "unlocked" :"locked"));
-	}
-	
-	private void publishString(String topic, String strmessage) {
-		MqttMessage message = new MqttMessage(strmessage.getBytes());
-		message.setQos(qos);
-		try {
-			securityClient.publish(topic, message);
-		} catch (MqttPersistenceException e) {
-			e.printStackTrace();
-		} catch (MqttException e) {
-			e.printStackTrace();
-		}
+		
+		String msgstring = "update/lock"+lockid+"/"+((isunlocked == true) ? "unlocked" :"locked");
+		System.out.println(msgstring);
+		
+        try {
+            MqttMessage message = new MqttMessage(msgstring.getBytes());
+            message.setQos(qos);
+            publishclient.publish("security", message);
+            
+
+        } catch(MqttException me) {
+            System.out.println("reason "+me.getReasonCode());
+            System.out.println("msg "+me.getMessage());
+            System.out.println("loc "+me.getLocalizedMessage());
+            System.out.println("cause "+me.getCause());
+            System.out.println("excep "+me);
+            me.printStackTrace();
+        }
 	}
 	
 	public void closeConnection() {
 		try {
-			securityClient.disconnect();
+			receiveclient.disconnect();
+			publishclient.disconnect();
 		} catch (MqttException e) {
 			e.printStackTrace();
 		}

@@ -11,4 +11,5 @@ public class Topics {
     public static final String SMOKE_SAFETY = "smoke/safety";
     public static final String HOME_SAFETY = "home/safety";
     public static final String ALARM = "alarm";
+    public static final String SECURITY = "security";
 }

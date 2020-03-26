@@ -4,9 +4,12 @@ import java.awt.event.ActionListener;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.concurrent.ScheduledService;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -14,6 +17,7 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -22,12 +26,19 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 public class Main extends Application {
 
-	TextField lock_status;
+	Label stepcount, heartrate, lockstatus1, lockstatus2, lockstatus3, holidaystatus;
+	TextField logicfield, photofield;
+	Dashboard dash;
 	AccessToken token; 
 	Authentication auth;
 	public void startSensors() throws MqttException {
 		BluetoothHub hub = new BluetoothHub();
 		MedicalDevice medDev = new MedicalDevice();
+		HomeSecurity hs = new HomeSecurity();
+		LockController lock1 = new LockController("1");
+		LockController lock2 = new LockController("2");
+		LockController lock3 = new LockController("3");
+		
 
 
 		Thread thread1 = new Thread() {
@@ -88,7 +99,7 @@ public class Main extends Application {
 		auth = new Authentication();
 		try {
 
-			Dashboard dash = new Dashboard(this);
+			dash = new Dashboard(this);
 
 			startSensors();
 			MedicalDataStorage healthStorage = new MedicalDataStorage(); //the data from the medical device
@@ -106,39 +117,152 @@ public class Main extends Application {
 			loginvBox.getChildren().add(usernamefield);
 			loginvBox.getChildren().add(passwordfield);
 			loginvBox.getChildren().add(loginbutton);
-
-			// security tab
-			Tab tab1 = new Tab("Security", new Label("Security"));
-
-			HBox hbox = new HBox();
-			Button lock_button = new Button("Toggle Lock");
-			hbox.getChildren().add(lock_button);
-			lock_status = new TextField("Unknown");
-			hbox.getChildren().add(lock_status);
-			tab1.setContent(hbox);
-
-			lock_button.setOnAction(new EventHandler<ActionEvent>() {
-				@Override
-				public void handle(ActionEvent e) {
-					dash.toggleLock();
-				}
-			});
-
+			
 			loginbutton.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
 				public void handle(ActionEvent e) {
 					if (logIn(usernamefield.getCharacters(), passwordfield.getCharacters())) {
 						popup.close();
 						Platform.setImplicitExit(true); // make sure application doesn't exit when we close popup
+						primaryStage.show();
 					}
+					else
+						System.exit(0);
 				}
 			});
+			
+			Button refreshbutton = new Button("refresh");
+
+			
+			refreshbutton.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent e) {
+					updateAll();
+				}
+			});
+			
+			// security tab
+			Tab tab1 = new Tab("Security", new Label("Security"));
+
+			Button lockbutton1 = new Button("lock1");
+			Button lockbutton2 = new Button("lock2");
+			Button lockbutton3 = new Button("lock3");
+			Button holidaybutton = new Button("H-Mode");
+			
+			lockstatus1 = new Label("N/A");
+			lockstatus2 = new Label("N/A");
+			lockstatus3 = new Label("N/A");
+			holidaystatus = new Label("N/A");
+			
+			HBox securityhbox1 = new HBox();
+			securityhbox1.getChildren().add(lockbutton1);
+			securityhbox1.getChildren().add(lockstatus1);
+			HBox securityhbox2 = new HBox();
+			securityhbox2.getChildren().add(lockbutton2);
+			securityhbox2.getChildren().add(lockstatus2);
+			HBox securityhbox3 = new HBox();
+			securityhbox3.getChildren().add(lockbutton3);
+			securityhbox3.getChildren().add(lockstatus3);
+			HBox securityhbox4 = new HBox();
+			securityhbox4.getChildren().add(holidaybutton);
+			securityhbox4.getChildren().add(holidaystatus);
+			VBox securityvbox = new VBox();
+			tab1.setContent(securityvbox);
+			
+			securityvbox.getChildren().add(securityhbox1);
+			securityvbox.getChildren().add(securityhbox2);
+			securityvbox.getChildren().add(securityhbox3);
+			securityvbox.getChildren().add(securityhbox4);
+
+
+			lockbutton1.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent e) {
+					dash.toggleLock(1);
+					updateAll();
+				}
+			});
+			
+			lockbutton2.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent e) {
+					dash.toggleLock(2);
+					updateAll();
+				}
+			});
+			
+			lockbutton3.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent e) {
+					dash.toggleLock(3);
+					updateAll();
+				}
+			});
+
+			holidaybutton.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent e) {
+					dash.toggleHoliday();
+					updateAll();
+				}
+			});
+
+			// Health tab
+			
+			refreshbutton.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent e) {
+					updateAll();
+				}
+			});
+			
 			Tab tab2 = new Tab("Health", new Label("Health"));
-			Tab tab3 = new Tab("Basic", new Label("Basic"));
+			
+			Label steplabel = new Label("Steps taken:");
+			Label heartlabel = new Label("Current Heartrate:");
+			stepcount = new Label("N/A");
+			heartrate = new Label("N/A");
+			
+			HBox healthhbox1 = new HBox();
+			healthhbox1.getChildren().add(steplabel);
+			healthhbox1.getChildren().add(stepcount);
+			HBox healthhbox2 = new HBox();
+			healthhbox2.getChildren().add(heartlabel);
+			healthhbox2.getChildren().add(heartrate);
+			HBox healthhbox3 = new HBox();
+			HBox healthhbox4 = new HBox();
+			VBox healthvbox = new VBox();
+			tab2.setContent(healthvbox);
+			
+			healthvbox.getChildren().add(refreshbutton);
+			healthvbox.getChildren().add(healthhbox1);
+			healthvbox.getChildren().add(healthhbox2);
+			healthvbox.getChildren().add(healthhbox3);
+			healthvbox.getChildren().add(healthhbox4);
+			
+			
+			Tab tab3 = new Tab("CompLog", new Label("CompLog"));
+			
+			Button clogbutton = new Button("Add Logic");
+			logicfield = new TextField();
+			HBox cloghbox = new HBox();
+			cloghbox.getChildren().add(clogbutton);
+			cloghbox.getChildren().add(logicfield);
+			tab3.setContent(cloghbox);
+			
+			Tab tab4 = new Tab("Photos", new Label("Photos"));
+			
+			Button photobutton = new Button("Upload Photo");
+			photofield = new TextField();
+			HBox photohbox = new HBox();
+			photohbox.getChildren().add(photobutton);
+			photohbox.getChildren().add(photofield);
+			tab4.setContent(photohbox);
 
 			tabPane.getTabs().add(tab1);
 			tabPane.getTabs().add(tab2);
 			tabPane.getTabs().add(tab3);
+			tabPane.getTabs().add(tab4);
 
 			VBox vBox = new VBox(tabPane);
 			Scene scene = new Scene(vBox);
@@ -147,9 +271,27 @@ public class Main extends Application {
 			popup.setTitle("Log in");
 			primaryStage.setScene(scene);
 			primaryStage.setTitle("Assisted Living Dashboard");
-
-			primaryStage.show();
+			
+			// service will refresh data every 1 sec
+			/*
+			ScheduledService<Object> service = new ScheduledService<Object>() {
+			     protected Task<Object> createTask() {
+			         return new Task<Object>() {
+			             protected Object call() {
+			                 updateAll();
+			                 return null; 
+			             }
+			         };
+			     }
+			 };
+			 service.setPeriod(Duration.seconds(1)); // refresh interval
+			 service.start();
+			*/
+			
 			popup.show();
+			
+
+			 
 			/*
 			 * BorderPane root = new BorderPane(); Scene scene = new Scene(root,400,400);
 			 * scene.getStylesheets().add(getClass().getResource("application.css").
@@ -160,12 +302,6 @@ public class Main extends Application {
 		}
 	}
 
-	public void updateLockInfo() {
-		if (lock_status.getText().contentEquals("Locked"))
-			lock_status.setText("Unlocked");
-		else
-			lock_status.setText("Locked");
-	}
 
 	private boolean logIn(CharSequence user, CharSequence pass) {
 		String username = user.toString();
@@ -173,8 +309,19 @@ public class Main extends Application {
 		String password = pass.toString();
 		System.out.println(password);
 		token = auth.authenticate(username, password);
+		dash.setAcessToken(token);
 		return true;
 	}
+	
+	private void updateAll() {
+		heartrate.setText(String.valueOf(dash.getHeartRate()));
+		stepcount.setText(String.valueOf(dash.getSteps()));
+		lockstatus1.setText(dash.getIsUnlocked(1) ? "unlocked" : "locked");
+		lockstatus2.setText(dash.getIsUnlocked(2) ? "unlocked" : "locked");
+		lockstatus3.setText(dash.getIsUnlocked(3) ? "unlocked" : "locked");
+		holidaystatus.setText(dash.getIsHoliday() ? "on" : "off");
+	}
+
 
 	public static void main(String[] args) {
 		launch(args);
