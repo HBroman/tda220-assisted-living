@@ -21,6 +21,7 @@ public class Dashboard implements MqttCallback {
 
 	public Dashboard(Main main) throws MqttException {
 		this.main = main;
+    	//System.out.println("Message receiveddd: " + message);
 		int qos = 2;
 		String broker = Topics.BROKER_URL; // "tcp://mqtt.eclipse.org:1883";
 		String clientId = "Dashboard";

@@ -7,6 +7,9 @@ public class Topics {
     public static final String LOCK = "lock";
     public static final String BROKER_URL = "tcp://localhost:1883";
     public static final String MOVEMENT_SECURITY = "security"; // (movement/name/boolean)
-    public static final String MOVEMENT_SAFETY = "safety";
+    public static final String MOVEMENT_SAFETY = "movement/safety";
+    public static final String SMOKE_SAFETY = "smoke/safety";
+    public static final String HOME_SAFETY = "home/safety";
+    public static final String ALARM = "alarm";
     public static final String SECURITY = "security";
 }
