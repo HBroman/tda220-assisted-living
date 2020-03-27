@@ -29,6 +29,7 @@ public class MedicalDataStorage implements MedicalDataStorageInterface {
                  totalSteps = totalSteps + database.get(i).step;
              }
          }
+
          return totalSteps;
 
     }
@@ -49,6 +50,7 @@ public class MedicalDataStorage implements MedicalDataStorageInterface {
             }
             average = total/database.size();
         }
+        System.out.println(average);
         return average;
 
     }

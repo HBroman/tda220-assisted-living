@@ -16,8 +16,10 @@ public class Dashboard implements MqttCallback {
 	Main main;
 	AccessToken token;
 
-	int heartrate = 10, steps = 5;
+	double heartrate = 100.0;
+	int steps = 5;
 	boolean isunlocked1, isunlocked2, isunlocked3, isholiday;
+	String alarm;
 
 	public Dashboard(Main main) throws MqttException {
 		this.main = main;
@@ -32,12 +34,11 @@ public class Dashboard implements MqttCallback {
 			MqttConnectOptions connOpts = new MqttConnectOptions();
 			connOpts.setCleanSession(true);
 			receiveclient.setCallback(this);
-			System.out.println("Connecting to broker: " + broker);
 			receiveclient.connect(connOpts);
-			System.out.println("Connected");
 			receiveclient.subscribe(Topics.LOCK); // sub to lock channel
-			receiveclient.subscribe(Topics.MEDICAL_DEVICE);
 			receiveclient.subscribe("dashboard");
+			receiveclient.subscribe(Topics.HEALTH_INFO);
+			receiveclient.subscribe(Topics.ALARM);
 		} catch (MqttException me) {
 			System.out.println("reason " + me.getReasonCode());
 			System.out.println("msg " + me.getMessage());
@@ -46,7 +47,6 @@ public class Dashboard implements MqttCallback {
 			System.out.println("excep " + me);
 			me.printStackTrace();
 		}
-		receiveclient.subscribe(Topics.HEALTH_INFO);
 
 		try {
 			publishclient = new MqttClient(Topics.BROKER_URL, MqttClient.generateClientId());
@@ -67,11 +67,16 @@ public class Dashboard implements MqttCallback {
 		}
 	}
 
+	public String getAlarm(){
+		String string = alarm;
+		alarm = "No alarm now";
+		return string;
+	}
 	public void setAcessToken(AccessToken token) {
 		this.token = token;
 	}
 
-	public int getHeartRate() {
+	public double getHeartRate() {
 		return heartrate;
 	}
 
@@ -98,12 +103,20 @@ public class Dashboard implements MqttCallback {
 	@Override
 	public void messageArrived(String topic, MqttMessage message) throws Exception {
 		System.out.println("Dashboard received: " + topic + "   " + message);
+		System.out.println("Uppdaterade värden: " + steps + " " + heartrate);
 		String[] msgarray = message.toString().split("/");
-		System.out.println(msgarray[0] + msgarray[1]);
+
 		switch (topic) {
-		case Topics.MEDICAL_DEVICE:
-			steps = Integer.valueOf(msgarray[0]);
-			heartrate = Integer.valueOf(msgarray[1]);
+			case Topics.ALARM:
+				if(message.toString().equals("alarm/movement")){
+					alarm = "There is no movement in any room, contacting closest Health Service Now!";
+				}else{
+					alarm = "Smoke sensor in " + msgarray[1] + " has gone off, contacting Care Giver now!";
+				}
+				break;
+		case Topics.HEALTH_INFO:
+			steps = Integer.parseInt(msgarray[0]);
+			heartrate = Double.parseDouble(msgarray[1]);
 			break;
 		case "dashboard":
 			switch (msgarray[0]) {

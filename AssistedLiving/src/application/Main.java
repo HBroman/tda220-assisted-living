@@ -218,10 +218,10 @@ public class Main extends Application {
 
 			Tab tab7 = new Tab("Alarm", new Label("Alarm"));
 
-			Label alarm = new Label("No alarm now.");
+			alarm_mov = new Label("No alarm now.");
 
 			HBox alarmbox = new HBox();
-			alarmbox.getChildren().add(alarm);
+			alarmbox.getChildren().add(alarm_mov);
 
 			tab7.setContent(alarmbox);
 
@@ -331,46 +331,13 @@ public class Main extends Application {
 			primaryStage.setTitle("Assisted Living Dashboard");
 
 
-			// service will refresh data every 1 sec
-
-			/*ScheduledService<Object> service = new ScheduledService<Object>() {
-			     protected Task<Object> createTask() {
-			         return new Task<Object>() {
-			             protected Object call() {
-			                 updateAll();
-			                 return null; 
-			             }
-			         };
-			     }
-			 };
-			 service.setPeriod(Duration.seconds(1)); // refresh interval
-			 service.start();*/
-
-			KeyFrame update = new KeyFrame(Duration.seconds(1), event -> {
+			KeyFrame update = new KeyFrame(Duration.seconds(5), event -> {
+				System.out.println("Uppdaterar");
 				updateAll();
-				// update label here. You don't need to use Platform.runLater(...), because Timeline makes sure it will be called on the UI thread.
 			});
 			Timeline tl = new Timeline(update);
 			tl.setCycleCount(Timeline.INDEFINITE);
 			tl.play();
-
-
-			/*Thread updateThread = new Thread() {
-				public void run() {
-
-					while(true) {
-						updateAll();
-
-						try {
-							Thread.sleep(200);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-
-					}
-				}
-			};
-			updateThread.start();*/
 			
 			popup.show();
 			
@@ -404,6 +371,7 @@ public class Main extends Application {
 		lockstatus2.setText(dash.getIsUnlocked(2) ? "unlocked" : "locked");
 		lockstatus3.setText(dash.getIsUnlocked(3) ? "unlocked" : "locked");
 		holidaystatus.setText(dash.getIsHoliday() ? "on" : "off");
+		alarm_mov.setText(dash.getAlarm());
 	}
 
 
