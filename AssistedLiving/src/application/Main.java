@@ -37,6 +37,7 @@ import javax.swing.text.html.ImageView;
 public class Main extends Application {
 
 	Label stepcount, heartrate, lockstatus1, lockstatus2, lockstatus3, holidaystatus, alarm_mov, photofield;
+	Label alarmtitle = new Label("Alarm");
 	Text inhabitantName, inhabitantAge;
 	TextField logicfield;
 	Dashboard dash;
@@ -221,7 +222,7 @@ public class Main extends Application {
 
 			// -------------- ALARM TAB -----------------
 
-			Tab tab7 = new Tab("Alarm", new Label("Alarm"));
+			Tab tab7 = new Tab(alarmtitle.getText(), alarmtitle);
 
 			alarm_mov = new Label("No alarm now.");
 
@@ -413,6 +414,12 @@ public class Main extends Application {
 		lockstatus3.setText(dash.getIsUnlocked(3) ? "unlocked" : "locked");
 		holidaystatus.setText(dash.getIsHoliday() ? "on" : "off");
 		alarm_mov.setText(dash.getAlarm());
+		System.out.println(dash.getAlarm());
+		if(dash.getAlarm().equals("No alarm now")){
+			System.out.println("Changing alarm title");
+
+			alarmtitle.setText("!!!");
+		}
 	}
 
 
