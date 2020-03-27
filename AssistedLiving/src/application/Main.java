@@ -1,6 +1,9 @@
 package application;
 
+import java.awt.*;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.Date;
 
 import javafx.animation.KeyFrame;
@@ -12,7 +15,10 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.scene.image.Image;
+import javafx.scene.layout.*;
 import javafx.scene.text.Text;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.scene.Scene;
@@ -21,19 +27,18 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
+import javax.swing.text.Element;
+import javax.swing.text.html.ImageView;
+
+
 public class Main extends Application {
 
-	Label stepcount, heartrate, lockstatus1, lockstatus2, lockstatus3, holidaystatus, alarm_mov, alarm_smoke;
+	Label stepcount, heartrate, lockstatus1, lockstatus2, lockstatus3, holidaystatus, alarm_mov, photofield;
 	Text inhabitantName, inhabitantAge;
-	TextField logicfield, photofield;
+	TextField logicfield;
 	Dashboard dash;
 	AccessToken token; 
 	Authentication auth;
@@ -234,6 +239,7 @@ public class Main extends Application {
 			TextField inage = new TextField("74");
 			Label caregiver = new Label("Care giver: ");
 			TextField incare = new TextField("Alfred Johansson");
+			TextField incarage = new TextField("0708894321");
 			Label healthservice = new Label("Health Service: ");
 			TextField inhealth = new TextField("Östersjukhuset");
 
@@ -248,6 +254,7 @@ public class Main extends Application {
 			HBox carebox = new HBox();
 			carebox.getChildren().add(caregiver);
 			carebox.getChildren().add(incare);
+			carebox.getChildren().add(incarage);
 
 			HBox healthbox = new HBox();
 			healthbox.getChildren().add(healthservice);
@@ -272,8 +279,8 @@ public class Main extends Application {
 			
 			Tab tab2 = new Tab("Health", new Label("Health"));
 			
-			Label steplabel = new Label("Steps taken:");
-			Label heartlabel = new Label("Current Heartrate:");
+			Label steplabel = new Label("Steps taken today: ");
+			Label heartlabel = new Label("Current Heartrate: ");
 			stepcount = new Label("N/A");
 			heartrate = new Label("N/A");
 			
@@ -287,12 +294,16 @@ public class Main extends Application {
 			HBox healthhbox4 = new HBox();
 			VBox healthvbox = new VBox();
 			tab2.setContent(healthvbox);
+
+
+			Button logbtn = new Button("Log data");
 			
 			//healthvbox.getChildren().add(refreshbutton);
 			healthvbox.getChildren().add(healthhbox1);
 			healthvbox.getChildren().add(healthhbox2);
 			healthvbox.getChildren().add(healthhbox3);
 			healthvbox.getChildren().add(healthhbox4);
+			healthvbox.getChildren().add(logbtn);
 
 			// -------------- COMPOSITE TAB -----------------
 			Tab tab3 = new Tab("CompLog", new Label("CompLog"));
@@ -308,11 +319,38 @@ public class Main extends Application {
 			Tab tab4 = new Tab("Photos", new Label("Photos"));
 			
 			Button photobutton = new Button("Upload Photo");
-			photofield = new TextField();
+			photofield = new Label("Uploaded photos: ");
 			HBox photohbox = new HBox();
+
+			HBox photos = new HBox();
+
+			Stage upload = new Stage();
+			final FileChooser fileChooser = new FileChooser();
+			final StackPane stac = new StackPane();
+			upload.setScene(new Scene(stac, 500, 500));
+
+			photobutton.setOnAction((final ActionEvent e) -> {
+				upload.show();
+				File file = fileChooser.showOpenDialog(upload);
+				if (file != null) {
+					String filename = file.getName();
+					Image image1 = new Image(file.toURI().toString());
+					BackgroundSize backgroundSize = new BackgroundSize(100, 100, true, true, true, false);
+					BackgroundImage backgroundImage = new BackgroundImage(image1, BackgroundRepeat.REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, backgroundSize);
+					stac.setBackground(new Background(backgroundImage));
+					photos.getChildren().add(new Button(filename));
+				}
+			});
+
 			photohbox.getChildren().add(photobutton);
 			photohbox.getChildren().add(photofield);
-			tab4.setContent(photohbox);
+
+			VBox all = new VBox();
+
+			all.getChildren().add(photohbox);
+			all.getChildren().add(photos);
+
+			tab4.setContent(all);
 
 			// -------------- REST -----------------
 			tabPane.getTabs().add(tab1);
@@ -325,6 +363,9 @@ public class Main extends Application {
 			VBox vBox = new VBox(tabPane);
 			Scene scene = new Scene(vBox);
 
+			// UPLOAD
+
+			// POPUP
 			popup.setScene(popupscene);
 			popup.setTitle("Log in");
 			primaryStage.setScene(scene);
