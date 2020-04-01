@@ -16,6 +16,10 @@ public class BluetoothHub implements MqttCallback {
 
     public BluetoothHub() {
 
+        LocalDate ld = LocalDate.now();
+
+        storage.addData(0,90,ld);
+
         try {
             SUBmqttClient = new MqttClient(Topics.BROKER_URL, MqttClient.generateClientId());
             PUBmqttClient = new MqttClient(Topics.BROKER_URL, MqttClient.generateClientId());
@@ -65,17 +69,19 @@ public class BluetoothHub implements MqttCallback {
 
     private void publishData(){
         final MqttTopic dataTopic = PUBmqttClient.getTopic(Topics.HEALTH_INFO);
-
+        int qos = 2;
         int totalSteps = storage.getTotalSteps();
         double averagePulse = storage.getAveragePulse();
         String msg = String.valueOf(totalSteps) + "/" + String.valueOf(averagePulse);
 
-
+        MqttMessage mqs = new MqttMessage(msg.getBytes());
+        mqs.setQos(qos);
 
         Thread thread = new Thread() {
             public void run() {
                 try {
-                    dataTopic.publish(new MqttMessage(msg.getBytes()));
+                    System.out.println("Published data. Topic: " + dataTopic.getName() + "  Message: " + msg);
+                    dataTopic.publish(mqs);
                 } catch (MqttException e) {
                     e.printStackTrace();
                 }
@@ -83,8 +89,6 @@ public class BluetoothHub implements MqttCallback {
         };
         thread.start();
         //dataTopic.publish(new MqttMessage(msg.getBytes()));
-
-        //System.out.println("Published data. Topic: " + dataTopic.getName() + "  Message: " + msg);
     }
 
     //-----------SUBSCRIBE-------------

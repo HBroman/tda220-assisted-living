@@ -13,18 +13,15 @@ public class Dashboard implements MqttCallback {
 	int qos;
 	MqttClient receiveclient, publishclient;
 	MemoryPersistence persistence;
-	Main main;
 	AccessToken token;
 
-	int heartrate = 10, steps = 5;
+	double heartrate = 100.0;
+	int steps = 5;
 	boolean isunlocked1, isunlocked2, isunlocked3, isholiday;
+	String alarm;
 
 	public Dashboard(Main main) throws MqttException {
-		this.main = main;
-    	//System.out.println("Message receiveddd: " + message);
 		int qos = 2;
-		String broker = Topics.BROKER_URL; // "tcp://mqtt.eclipse.org:1883";
-		String clientId = "Dashboard";
 		persistence = new MemoryPersistence();
 
 		try {
@@ -32,12 +29,11 @@ public class Dashboard implements MqttCallback {
 			MqttConnectOptions connOpts = new MqttConnectOptions();
 			connOpts.setCleanSession(true);
 			receiveclient.setCallback(this);
-			System.out.println("Connecting to broker: " + broker);
 			receiveclient.connect(connOpts);
-			System.out.println("Connected");
-			receiveclient.subscribe(Topics.LOCK); // sub to lock channel
-			receiveclient.subscribe(Topics.MEDICAL_DEVICE);
-			receiveclient.subscribe("dashboard");
+			receiveclient.subscribe(Topics.DASHBOARD);
+			receiveclient.subscribe(Topics.HEALTH_INFO);
+			receiveclient.subscribe(Topics.ALARM);
+			System.out.println("Dash In Connected");
 		} catch (MqttException me) {
 			System.out.println("reason " + me.getReasonCode());
 			System.out.println("msg " + me.getMessage());
@@ -46,16 +42,14 @@ public class Dashboard implements MqttCallback {
 			System.out.println("excep " + me);
 			me.printStackTrace();
 		}
-		receiveclient.subscribe(Topics.HEALTH_INFO);
 
 		try {
 			publishclient = new MqttClient(Topics.BROKER_URL, MqttClient.generateClientId());
 			MqttConnectOptions connOpts = new MqttConnectOptions();
 			connOpts.setCleanSession(false);
 			publishclient.setCallback(this);
-			System.out.println("Connecting to broker: " + broker);
 			publishclient.connect(connOpts);
-			System.out.println("Connected");
+			System.out.println("Dash Out Connected");
 
 		} catch (MqttException me) {
 			System.out.println("reason " + me.getReasonCode());
@@ -67,11 +61,16 @@ public class Dashboard implements MqttCallback {
 		}
 	}
 
+	public String getAlarm(){
+		String string = alarm;
+		alarm = "No alarm now";
+		return string;
+	}
 	public void setAcessToken(AccessToken token) {
 		this.token = token;
 	}
 
-	public int getHeartRate() {
+	public double getHeartRate() {
 		return heartrate;
 	}
 
@@ -99,13 +98,20 @@ public class Dashboard implements MqttCallback {
 	public void messageArrived(String topic, MqttMessage message) throws Exception {
 		System.out.println("Dashboard received: " + topic + "   " + message);
 		String[] msgarray = message.toString().split("/");
-		System.out.println(msgarray[0] + msgarray[1]);
+
 		switch (topic) {
-		case Topics.MEDICAL_DEVICE:
-			steps = Integer.valueOf(msgarray[0]);
-			heartrate = Integer.valueOf(msgarray[1]);
+			case Topics.ALARM:
+				if(message.toString().equals("alarm/movement")){
+					alarm = "There is no movement in any room, contacting closest Health Service Now!";
+				}else{
+					alarm = "Smoke sensor in " + msgarray[1] + " has gone off, contacting Care Giver now!";
+				}
+				break;
+		case Topics.HEALTH_INFO:
+			steps = Integer.parseInt(msgarray[0]);
+			heartrate = Double.parseDouble(msgarray[1]);
 			break;
-		case "dashboard":
+		case Topics.DASHBOARD:
 			switch (msgarray[0]) {
 			case "update":
 				switch (msgarray[1]) {
@@ -160,6 +166,10 @@ public class Dashboard implements MqttCallback {
 			System.out.println("ACCESS DENIED");
 
 	}
+	
+	public void saveLogic(String logic) {
+		publishString("addcompositelogic", logic);
+	}
 
 	public void toggleHoliday() {
 		if (token.homesecurity) {
@@ -181,6 +191,23 @@ public class Dashboard implements MqttCallback {
 		}
 		else
 			System.out.println("ACCESS DENIED");
+	}
+	
+	private void publishString(String topic, String strmessage) {
+        try {
+            MqttMessage message = new MqttMessage(strmessage.getBytes());
+            message.setQos(qos);
+            publishclient.publish(topic, message);
+            
+
+        } catch(MqttException me) {
+            System.out.println("reason "+me.getReasonCode());
+            System.out.println("msg "+me.getMessage());
+            System.out.println("loc "+me.getLocalizedMessage());
+            System.out.println("cause "+me.getCause());
+            System.out.println("excep "+me);
+            me.printStackTrace();
+        }
 	}
 
 	public void closeConnection() {

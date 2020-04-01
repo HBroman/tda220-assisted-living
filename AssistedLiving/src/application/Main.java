@@ -1,13 +1,24 @@
 package application;
 
+import java.awt.*;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.Date;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.concurrent.ScheduledService;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
+import javafx.scene.image.Image;
+import javafx.scene.layout.*;
+import javafx.scene.text.Text;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.scene.Scene;
@@ -16,82 +27,26 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
+import javax.swing.text.Element;
+import javax.swing.text.html.ImageView;
+
+
 public class Main extends Application {
 
-	Label stepcount, heartrate, lockstatus1, lockstatus2, lockstatus3, holidaystatus;
-	TextField logicfield, photofield;
+	Label stepcount, heartrate, lockstatus1, lockstatus2, lockstatus3, holidaystatus, alarm_mov, photofield;
+	Label alarmtitle = new Label("Alarm");
+	Text inhabitantName, inhabitantAge;
+	TextField logicfield;
 	Dashboard dash;
 	AccessToken token; 
 	Authentication auth;
+	FakeDistributedSystems fds;
+	
 	public void startSensors() throws MqttException {
-		BluetoothHub hub = new BluetoothHub();
-		MedicalDevice medDev = new MedicalDevice();
-		HomeSecurity hs = new HomeSecurity();
-		LockController lock1 = new LockController("1");
-		LockController lock2 = new LockController("2");
-		LockController lock3 = new LockController("3");
-		
-
-
-		Thread thread1 = new Thread() {
-			public void run() {
-				medDev.start();
-
-			}
-		};
-		thread1.start();
-
-		Thread thread2 = new Thread() {
-			public void run() {
-				try {
-					hub.start();
-				} catch (MqttException e) {
-					e.printStackTrace();
-				}
-
-			}
-		};
-		thread2.start();
-
-		Thread thread3 = new Thread() {
-			public void run() {
-				MovementDetection move = new MovementDetection();
-
-			}
-		};
-		thread3.start();
-
-		Thread thread4 = new Thread() {
-			public void run() {
-				try {
-					HomeSafety hm = new HomeSafety();
-					hm.start();
-				} catch (MqttException e) {
-					e.printStackTrace();
-				}
-
-			}
-		};
-		thread4.start();
-
-		Thread thread5 = new Thread() {
-			public void run() {
-				AlarmCommunication alarm = new AlarmCommunication();
-
-
-			}
-		};
-		thread5.start();
-
-
+		fds = new FakeDistributedSystems();
 	}
 
 	@Override
@@ -141,7 +96,7 @@ public class Main extends Application {
 				}
 			});
 			
-			// security tab
+			// -------------- SECURITY TAB -----------------
 			Tab tab1 = new Tab("Security", new Label("Security"));
 
 			Button lockbutton1 = new Button("lock1");
@@ -207,19 +162,68 @@ public class Main extends Application {
 				}
 			});
 
-			// Health tab
+			// -------------- ALARM TAB -----------------
+
+			Tab tab7 = new Tab(alarmtitle.getText(), alarmtitle);
+
+			alarm_mov = new Label("No alarm now.");
+
+			HBox alarmbox = new HBox();
+			alarmbox.getChildren().add(alarm_mov);
+
+			tab7.setContent(alarmbox);
+
+			// -------------- BASIC TAB -----------------
+			Tab tab8 = new Tab("Basics", new Label("Basics"));
+
+			Label name = new Label("Inhabitants Name: ");
+			TextField inname = new TextField("Birgit Johansson");
+			Label age = new Label("Inhabitans age: ");
+			TextField inage = new TextField("74");
+			Label caregiver = new Label("Care giver: ");
+			TextField incare = new TextField("Alfred Johansson");
+			TextField incarage = new TextField("0708894321");
+			Label healthservice = new Label("Health Service: ");
+			TextField inhealth = new TextField("Östersjukhuset");
+
+			HBox namebox = new HBox();
+			namebox.getChildren().add(name);
+			namebox.getChildren().add(inname);
+
+			HBox agebox = new HBox();
+			agebox.getChildren().add(age);
+			agebox.getChildren().add(inage);
+
+			HBox carebox = new HBox();
+			carebox.getChildren().add(caregiver);
+			carebox.getChildren().add(incare);
+			carebox.getChildren().add(incarage);
+
+			HBox healthbox = new HBox();
+			healthbox.getChildren().add(healthservice);
+			healthbox.getChildren().add(inhealth);
+
+			VBox basicvbox = new VBox();
+			tab8.setContent(basicvbox);
+
+			basicvbox.getChildren().add(carebox);
+			basicvbox.getChildren().add(healthbox);
+			basicvbox.getChildren().add(namebox);
+			basicvbox.getChildren().add(agebox);
+
+			// -------------- HEALTH TAB -----------------
 			
-			refreshbutton.setOnAction(new EventHandler<ActionEvent>() {
+			/*refreshbutton.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
 				public void handle(ActionEvent e) {
 					updateAll();
 				}
-			});
+			});*/
 			
 			Tab tab2 = new Tab("Health", new Label("Health"));
 			
-			Label steplabel = new Label("Steps taken:");
-			Label heartlabel = new Label("Current Heartrate:");
+			Label steplabel = new Label("Steps taken today: ");
+			Label heartlabel = new Label("Current Heartrate: ");
 			stepcount = new Label("N/A");
 			heartrate = new Label("N/A");
 			
@@ -233,14 +237,18 @@ public class Main extends Application {
 			HBox healthhbox4 = new HBox();
 			VBox healthvbox = new VBox();
 			tab2.setContent(healthvbox);
+
+
+			Button logbtn = new Button("Log data");
 			
-			healthvbox.getChildren().add(refreshbutton);
+			//healthvbox.getChildren().add(refreshbutton);
 			healthvbox.getChildren().add(healthhbox1);
 			healthvbox.getChildren().add(healthhbox2);
 			healthvbox.getChildren().add(healthhbox3);
 			healthvbox.getChildren().add(healthhbox4);
-			
-			
+			healthvbox.getChildren().add(logbtn);
+
+			// -------------- COMPOSITE TAB -----------------
 			Tab tab3 = new Tab("CompLog", new Label("CompLog"));
 			
 			Button clogbutton = new Button("Add Logic");
@@ -250,43 +258,76 @@ public class Main extends Application {
 			cloghbox.getChildren().add(logicfield);
 			tab3.setContent(cloghbox);
 			
+			clogbutton.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent e) {
+					dash.saveLogic(logicfield.getText());
+				}
+			});
+
+			// -------------- PHOTOS TAB -----------------
 			Tab tab4 = new Tab("Photos", new Label("Photos"));
 			
 			Button photobutton = new Button("Upload Photo");
-			photofield = new TextField();
+			photofield = new Label("Uploaded photos: ");
 			HBox photohbox = new HBox();
+
+			HBox photos = new HBox();
+
+			Stage upload = new Stage();
+			final FileChooser fileChooser = new FileChooser();
+			final StackPane stac = new StackPane();
+			upload.setScene(new Scene(stac, 500, 500));
+
+			photobutton.setOnAction((final ActionEvent e) -> {
+				upload.show();
+				File file = fileChooser.showOpenDialog(upload);
+				if (file != null) {
+					String filename = file.getName();
+					Image image1 = new Image(file.toURI().toString());
+					BackgroundSize backgroundSize = new BackgroundSize(100, 100, true, true, true, false);
+					BackgroundImage backgroundImage = new BackgroundImage(image1, BackgroundRepeat.REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, backgroundSize);
+					stac.setBackground(new Background(backgroundImage));
+					photos.getChildren().add(new Button(filename));
+				}
+			});
+
 			photohbox.getChildren().add(photobutton);
 			photohbox.getChildren().add(photofield);
-			tab4.setContent(photohbox);
 
+			VBox all = new VBox();
+
+			all.getChildren().add(photohbox);
+			all.getChildren().add(photos);
+
+			tab4.setContent(all);
+
+			// -------------- REST -----------------
 			tabPane.getTabs().add(tab1);
 			tabPane.getTabs().add(tab2);
 			tabPane.getTabs().add(tab3);
 			tabPane.getTabs().add(tab4);
+			tabPane.getTabs().add(tab7);
+			tabPane.getTabs().add(tab8);
 
 			VBox vBox = new VBox(tabPane);
 			Scene scene = new Scene(vBox);
 
+			// UPLOAD
+
+			// POPUP
 			popup.setScene(popupscene);
 			popup.setTitle("Log in");
 			primaryStage.setScene(scene);
 			primaryStage.setTitle("Assisted Living Dashboard");
-			
-			// service will refresh data every 1 sec
-			/*
-			ScheduledService<Object> service = new ScheduledService<Object>() {
-			     protected Task<Object> createTask() {
-			         return new Task<Object>() {
-			             protected Object call() {
-			                 updateAll();
-			                 return null; 
-			             }
-			         };
-			     }
-			 };
-			 service.setPeriod(Duration.seconds(1)); // refresh interval
-			 service.start();
-			*/
+
+
+			KeyFrame update = new KeyFrame(Duration.seconds(1), event -> {
+				updateAll();
+			});
+			Timeline tl = new Timeline(update);
+			tl.setCycleCount(Timeline.INDEFINITE);
+			tl.play();
 			
 			popup.show();
 			
@@ -301,7 +342,6 @@ public class Main extends Application {
 			e.printStackTrace();
 		}
 	}
-
 
 	private boolean logIn(CharSequence user, CharSequence pass) {
 		String username = user.toString();
@@ -320,6 +360,11 @@ public class Main extends Application {
 		lockstatus2.setText(dash.getIsUnlocked(2) ? "unlocked" : "locked");
 		lockstatus3.setText(dash.getIsUnlocked(3) ? "unlocked" : "locked");
 		holidaystatus.setText(dash.getIsHoliday() ? "on" : "off");
+		alarm_mov.setText(dash.getAlarm());
+		if(dash.getAlarm().equals("No alarm now")){
+
+			alarmtitle.setText("!!!");
+		}
 	}
 
 

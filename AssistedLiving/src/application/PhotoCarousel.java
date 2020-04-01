@@ -1,5 +1,6 @@
 package application;
 
+import java.awt.List;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
@@ -17,36 +18,31 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
-public class HomeSecurity implements MqttCallback {
+public class PhotoCarousel implements MqttCallback {
 
 	String broker, clientId;
 	int qos;
 	MqttClient publishclient, receiveclient;
 	MemoryPersistence persistence;
-	String fromlocks = "lock_out";
-	String fromdash = "security_in";
-	String todash = "security_out";
-	ArrayList<String> facedb;
-	boolean holidaymode = false;
+	ArrayList<String> imgdb;
 
-	public HomeSecurity() {
-		facedb = new ArrayList<String>();
-		facedb.add("daughter");
-		facedb.add("son");
-		facedb.add("friend");
+	public PhotoCarousel() {
 		int qos = 2;
-		String broker = "tcp://localhost:1883"; // "tcp://mqtt.eclipse.org:1883";
-		String clientId = "HomeSecurity";
-		persistence = new MemoryPersistence();
 
+		String clientId = "PhotoCarousel";
+		persistence = new MemoryPersistence();
+		
+		imgdb = new ArrayList<String>();
+		
 		try {
 			receiveclient = new MqttClient(Topics.BROKER_URL, MqttClient.generateClientId());
 			MqttConnectOptions connOpts = new MqttConnectOptions();
 			connOpts.setCleanSession(true);
 			receiveclient.setCallback(this);
+			System.out.println("Connecting to broker: " + broker);
 			receiveclient.connect(connOpts);
-			System.out.println("Secrity In Connected");
-			receiveclient.subscribe("security"); // sub to security channel
+			System.out.println("Connected");
+			receiveclient.subscribe("uploadphoto"); // sub to security channel
 
 		} catch (MqttException me) {
 			System.out.println("reason " + me.getReasonCode());
@@ -63,8 +59,9 @@ public class HomeSecurity implements MqttCallback {
 			MqttConnectOptions connOpts = new MqttConnectOptions();
 			connOpts.setCleanSession(false);
 			publishclient.setCallback(this);
+			System.out.println("Connecting to broker: " + broker);
 			publishclient.connect(connOpts);
-			System.out.println("Security Out Connected");
+			System.out.println("Connected");
 
 		} catch (MqttException me) {
 			System.out.println("reason " + me.getReasonCode());
@@ -79,40 +76,8 @@ public class HomeSecurity implements MqttCallback {
 
 	@Override
 	public void messageArrived(String topic, MqttMessage message) throws Exception {
-		System.out.println("Security received: " + topic + "   " + message);
-		String[] msgarray = message.toString().split("/");
-		switch (msgarray[0]) {
-		case "lock":
-			publishString(msgarray[1], "lock");
-			break;
-		case "unlock":
-			publishString(msgarray[1], "unlock");
-			break;
-		case "toggle":
-			publishString(msgarray[1], "toggle");
-			break;
-		case "facescanned":
-			if (facedb.contains(msgarray[1]))
-				publishString("lock"+msgarray[2], "unlock");
-			break;
-		case "update":
-			publishString(Topics.DASHBOARD, "update/"+msgarray[1]+"/"+msgarray[2]);
-			break;
-		case "holidaymode":
-			if (msgarray[1].equals("on"))
-				holidaymode = true;
-			else if (msgarray[1].equals("toggle"))
-					holidaymode = (holidaymode ? false : true);
-			else
-				holidaymode = false;
-			publishString(Topics.DASHBOARD, "update/holidaymode/"+(holidaymode ? "true" : "false"));
-			break;
-		case "movement":
-			if (msgarray[2].equals("true") && holidaymode == true)
-				publishString("alarm", "alarm/intruder");
-			break;
-				
-		}
+			if (topic.equals("uploadphoto"))
+				imgdb.add(message.toString());
 		}
 
 	
@@ -133,13 +98,6 @@ public class HomeSecurity implements MqttCallback {
         }
 	}
 	
-	private void lockLock(String lockid) {
-		publishString("lock"+lockid, "lock");
-	}
-
-	private void unlockLock(String lockid) {
-		publishString("lock"+lockid, "unlock");
-	}
 
 	public void closeConnection() {
 		try {

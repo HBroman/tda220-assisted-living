@@ -1,5 +1,6 @@
 package application;
 
+import java.awt.List;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
@@ -17,27 +18,20 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
-public class HomeSecurity implements MqttCallback {
+public class CompositeLogic implements MqttCallback {
 
 	String broker, clientId;
 	int qos;
 	MqttClient publishclient, receiveclient;
 	MemoryPersistence persistence;
-	String fromlocks = "lock_out";
-	String fromdash = "security_in";
-	String todash = "security_out";
-	ArrayList<String> facedb;
-	boolean holidaymode = false;
+	ArrayList<String> logiclist;
 
-	public HomeSecurity() {
-		facedb = new ArrayList<String>();
-		facedb.add("daughter");
-		facedb.add("son");
-		facedb.add("friend");
+	public CompositeLogic() {
 		int qos = 2;
-		String broker = "tcp://localhost:1883"; // "tcp://mqtt.eclipse.org:1883";
-		String clientId = "HomeSecurity";
+
+		String clientId = "PhotoCarousel";
 		persistence = new MemoryPersistence();
+		logiclist = new ArrayList<String>();
 
 		try {
 			receiveclient = new MqttClient(Topics.BROKER_URL, MqttClient.generateClientId());
@@ -45,8 +39,9 @@ public class HomeSecurity implements MqttCallback {
 			connOpts.setCleanSession(true);
 			receiveclient.setCallback(this);
 			receiveclient.connect(connOpts);
-			System.out.println("Secrity In Connected");
-			receiveclient.subscribe("security"); // sub to security channel
+			System.out.println("Composite Logic In Connected");
+			receiveclient.subscribe("addcompositelogic");
+			receiveclient.subscribe("security");
 
 		} catch (MqttException me) {
 			System.out.println("reason " + me.getReasonCode());
@@ -57,14 +52,14 @@ public class HomeSecurity implements MqttCallback {
 			me.printStackTrace();
 
 		}
-		
+
 		try {
 			publishclient = new MqttClient(Topics.BROKER_URL, MqttClient.generateClientId());
 			MqttConnectOptions connOpts = new MqttConnectOptions();
 			connOpts.setCleanSession(false);
 			publishclient.setCallback(this);
 			publishclient.connect(connOpts);
-			System.out.println("Security Out Connected");
+			System.out.println("Composite Logic Out Connected");
 
 		} catch (MqttException me) {
 			System.out.println("reason " + me.getReasonCode());
@@ -76,69 +71,51 @@ public class HomeSecurity implements MqttCallback {
 		}
 	}
 
-
 	@Override
 	public void messageArrived(String topic, MqttMessage message) throws Exception {
-		System.out.println("Security received: " + topic + "   " + message);
-		String[] msgarray = message.toString().split("/");
-		switch (msgarray[0]) {
-		case "lock":
-			publishString(msgarray[1], "lock");
-			break;
-		case "unlock":
-			publishString(msgarray[1], "unlock");
-			break;
-		case "toggle":
-			publishString(msgarray[1], "toggle");
-			break;
-		case "facescanned":
-			if (facedb.contains(msgarray[1]))
-				publishString("lock"+msgarray[2], "unlock");
-			break;
-		case "update":
-			publishString(Topics.DASHBOARD, "update/"+msgarray[1]+"/"+msgarray[2]);
-			break;
-		case "holidaymode":
-			if (msgarray[1].equals("on"))
-				holidaymode = true;
-			else if (msgarray[1].equals("toggle"))
-					holidaymode = (holidaymode ? false : true);
-			else
-				holidaymode = false;
-			publishString(Topics.DASHBOARD, "update/holidaymode/"+(holidaymode ? "true" : "false"));
-			break;
-		case "movement":
-			if (msgarray[2].equals("true") && holidaymode == true)
-				publishString("alarm", "alarm/intruder");
-			break;
-				
-		}
-		}
+		if (topic.equals("addcompositelogic")) {
+			logiclist.add(message.toString());
+			System.out.println("ADDED LOGIC  " + message.toString());
+		} else
+			trylogic(topic, message);
+	}
 
-	
+	private void trylogic(String topic, MqttMessage message) {
+		if (logiclist.contains("synchronizelocks")) {
+			String[] msgarray = message.toString().split("/");
+			if (msgarray[0].equals("toggle")) {
+				switch (msgarray[1]) {
+				case "lock1":
+					publishString("lock2", "toggle");
+					publishString("lock3", "toggle");
+					break;
+				case "lock2":
+					publishString("lock1", "toggle");
+					publishString("lock3", "toggle");
+					break;
+				case "lock3":
+					publishString("lock1", "toggle");
+					publishString("lock2", "toggle");
+					break;
+				}
+			}
+		}
+	}
+
 	private void publishString(String topic, String strmessage) {
-        try {
-            MqttMessage message = new MqttMessage(strmessage.getBytes());
-            message.setQos(qos);
-            publishclient.publish(topic, message);
-            
+		try {
+			MqttMessage message = new MqttMessage(strmessage.getBytes());
+			message.setQos(qos);
+			publishclient.publish(topic, message);
 
-        } catch(MqttException me) {
-            System.out.println("reason "+me.getReasonCode());
-            System.out.println("msg "+me.getMessage());
-            System.out.println("loc "+me.getLocalizedMessage());
-            System.out.println("cause "+me.getCause());
-            System.out.println("excep "+me);
-            me.printStackTrace();
-        }
-	}
-	
-	private void lockLock(String lockid) {
-		publishString("lock"+lockid, "lock");
-	}
-
-	private void unlockLock(String lockid) {
-		publishString("lock"+lockid, "unlock");
+		} catch (MqttException me) {
+			System.out.println("reason " + me.getReasonCode());
+			System.out.println("msg " + me.getMessage());
+			System.out.println("loc " + me.getLocalizedMessage());
+			System.out.println("cause " + me.getCause());
+			System.out.println("excep " + me);
+			me.printStackTrace();
+		}
 	}
 
 	public void closeConnection() {
