@@ -9,7 +9,7 @@ public class FakeDistributedSystems {
 		BluetoothHub hub = new BluetoothHub();
 		
 		HomeSecurity hs = new HomeSecurity();
-		
+		MedicalDataStorage healthStorage = new MedicalDataStorage(); //the data from the medical device
 		CompositeLogic cl = new CompositeLogic();
 		LockController lock1 = new LockController("1");
 		LockController lock2 = new LockController("2");
