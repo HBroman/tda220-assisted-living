@@ -23,7 +23,6 @@ public class LockController implements MqttCallback {
 		this.isunlocked = false;
 		
 		int qos = 2;
-		String broker = "tcp://localhost:1883"; // "tcp://mqtt.eclipse.org:1883";
 		String clientId = lockid;
 		persistence = new MemoryPersistence();
 
@@ -32,9 +31,8 @@ public class LockController implements MqttCallback {
 			MqttConnectOptions connOpts = new MqttConnectOptions();
 			connOpts.setCleanSession(true);
 			receiveclient.setCallback(this);
-			System.out.println("Locksensor connecting to broker: " + broker);
 			receiveclient.connect(connOpts);
-			System.out.println("Locksensor connected");
+			System.out.println("Locksensor"+lockid+" In Connected");
 			String substring = "lock"+lockid;
 			receiveclient.subscribe(substring); //
 
@@ -52,9 +50,8 @@ public class LockController implements MqttCallback {
 			MqttConnectOptions connOpts = new MqttConnectOptions();
 			connOpts.setCleanSession(false);
 			publishclient.setCallback(this);
-			System.out.println("Connecting to broker: " + broker);
 			publishclient.connect(connOpts);
-			System.out.println("Connected");
+			System.out.println("Locksensor"+lockid+" Out Connected");
 
 		} catch (MqttException me) {
 			System.out.println("reason " + me.getReasonCode());
@@ -82,7 +79,6 @@ public class LockController implements MqttCallback {
 			toggle();
 			break;
 		}
-		
 	}
 	
 	public void unlock() {
@@ -106,7 +102,6 @@ public class LockController implements MqttCallback {
 	public void sendUpdate() {
 		
 		String msgstring = "update/lock"+lockid+"/"+((isunlocked == true) ? "unlocked" :"locked");
-		System.out.println(msgstring);
 		
         try {
             MqttMessage message = new MqttMessage(msgstring.getBytes());

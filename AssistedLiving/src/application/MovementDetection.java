@@ -43,7 +43,7 @@ public class MovementDetection {
         try {
 
             MqttConnectOptions options = new MqttConnectOptions();
-            options.setCleanSession(false);
+            options.setCleanSession(true);
 
             PUBSecuritymqttClient.connect(options);
             PUBSafetymqttClient.connect(options);

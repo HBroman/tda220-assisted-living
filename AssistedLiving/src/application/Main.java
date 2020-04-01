@@ -322,8 +322,7 @@ public class Main extends Application {
 			primaryStage.setTitle("Assisted Living Dashboard");
 
 
-			KeyFrame update = new KeyFrame(Duration.seconds(5), event -> {
-				System.out.println("Uppdaterar");
+			KeyFrame update = new KeyFrame(Duration.seconds(1), event -> {
 				updateAll();
 			});
 			Timeline tl = new Timeline(update);
@@ -344,7 +343,6 @@ public class Main extends Application {
 		}
 	}
 
-
 	private boolean logIn(CharSequence user, CharSequence pass) {
 		String username = user.toString();
 		System.out.println(username);
@@ -363,9 +361,7 @@ public class Main extends Application {
 		lockstatus3.setText(dash.getIsUnlocked(3) ? "unlocked" : "locked");
 		holidaystatus.setText(dash.getIsHoliday() ? "on" : "off");
 		alarm_mov.setText(dash.getAlarm());
-		System.out.println(dash.getAlarm());
 		if(dash.getAlarm().equals("No alarm now")){
-			System.out.println("Changing alarm title");
 
 			alarmtitle.setText("!!!");
 		}

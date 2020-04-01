@@ -23,15 +23,13 @@ public class FaceRecognition implements Runnable{
 		
 		this.lockid = lockid;
 		int qos = 2;
-		String broker = "tcp://localhost:1883"; // "tcp://mqtt.eclipse.org:1883";
 		String clientId = lockid;
 		persistence = new MemoryPersistence();
 
 		try {
-			securityClient = new MqttClient(broker, clientId, persistence);
+			securityClient = new MqttClient(Topics.BROKER_URL, clientId, persistence);
 			MqttConnectOptions connOpts = new MqttConnectOptions();
 			connOpts.setCleanSession(true);
-			System.out.println("Locksensor connecting to broker: " + broker);
 			securityClient.connect(connOpts);
 			System.out.println("Locksensor connected");
 			securityClient.subscribe("lock_in"); // sub to security channel

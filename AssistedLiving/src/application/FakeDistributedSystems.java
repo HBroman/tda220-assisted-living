@@ -10,11 +10,12 @@ public class FakeDistributedSystems {
 		
 		HomeSecurity hs = new HomeSecurity();
 		
+		CompositeLogic cl = new CompositeLogic();
 		LockController lock1 = new LockController("1");
 		LockController lock2 = new LockController("2");
 		LockController lock3 = new LockController("3");
 		
-
+		
 		try {
 			MedicalDevice medDev = new MedicalDevice();
 			Thread thread1 = new Thread() {
@@ -63,5 +64,6 @@ public class FakeDistributedSystems {
 			}
 		};
 		thread5.start();
+		
 	}
 }

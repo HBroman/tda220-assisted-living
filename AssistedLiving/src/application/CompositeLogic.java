@@ -38,9 +38,8 @@ public class CompositeLogic implements MqttCallback {
 			MqttConnectOptions connOpts = new MqttConnectOptions();
 			connOpts.setCleanSession(true);
 			receiveclient.setCallback(this);
-			System.out.println("Connecting to broker: " + broker);
 			receiveclient.connect(connOpts);
-			System.out.println("Connected");
+			System.out.println("Composite Logic In Connected");
 			receiveclient.subscribe("addcompositelogic");
 			receiveclient.subscribe("security");
 
@@ -59,9 +58,8 @@ public class CompositeLogic implements MqttCallback {
 			MqttConnectOptions connOpts = new MqttConnectOptions();
 			connOpts.setCleanSession(false);
 			publishclient.setCallback(this);
-			System.out.println("Connecting to broker: " + broker);
 			publishclient.connect(connOpts);
-			System.out.println("Connected");
+			System.out.println("Composite Logic Out Connected");
 
 		} catch (MqttException me) {
 			System.out.println("reason " + me.getReasonCode());

@@ -13,7 +13,6 @@ public class Dashboard implements MqttCallback {
 	int qos;
 	MqttClient receiveclient, publishclient;
 	MemoryPersistence persistence;
-	Main main;
 	AccessToken token;
 
 	double heartrate = 100.0;
@@ -22,11 +21,7 @@ public class Dashboard implements MqttCallback {
 	String alarm;
 
 	public Dashboard(Main main) throws MqttException {
-		this.main = main;
-    	//System.out.println("Message receiveddd: " + message);
 		int qos = 2;
-		String broker = Topics.BROKER_URL; // "tcp://mqtt.eclipse.org:1883";
-		String clientId = "Dashboard";
 		persistence = new MemoryPersistence();
 
 		try {
@@ -35,10 +30,10 @@ public class Dashboard implements MqttCallback {
 			connOpts.setCleanSession(true);
 			receiveclient.setCallback(this);
 			receiveclient.connect(connOpts);
-			receiveclient.subscribe(Topics.LOCK); // sub to lock channel
-			receiveclient.subscribe("dashboard");
+			receiveclient.subscribe(Topics.DASHBOARD);
 			receiveclient.subscribe(Topics.HEALTH_INFO);
 			receiveclient.subscribe(Topics.ALARM);
+			System.out.println("Dash In Connected");
 		} catch (MqttException me) {
 			System.out.println("reason " + me.getReasonCode());
 			System.out.println("msg " + me.getMessage());
@@ -53,9 +48,8 @@ public class Dashboard implements MqttCallback {
 			MqttConnectOptions connOpts = new MqttConnectOptions();
 			connOpts.setCleanSession(false);
 			publishclient.setCallback(this);
-			System.out.println("Connecting to broker: " + broker);
 			publishclient.connect(connOpts);
-			System.out.println("Connected");
+			System.out.println("Dash Out Connected");
 
 		} catch (MqttException me) {
 			System.out.println("reason " + me.getReasonCode());
@@ -103,7 +97,6 @@ public class Dashboard implements MqttCallback {
 	@Override
 	public void messageArrived(String topic, MqttMessage message) throws Exception {
 		System.out.println("Dashboard received: " + topic + "   " + message);
-		System.out.println("Uppdaterade värden: " + steps + " " + heartrate);
 		String[] msgarray = message.toString().split("/");
 
 		switch (topic) {
@@ -118,7 +111,7 @@ public class Dashboard implements MqttCallback {
 			steps = Integer.parseInt(msgarray[0]);
 			heartrate = Double.parseDouble(msgarray[1]);
 			break;
-		case "dashboard":
+		case Topics.DASHBOARD:
 			switch (msgarray[0]) {
 			case "update":
 				switch (msgarray[1]) {

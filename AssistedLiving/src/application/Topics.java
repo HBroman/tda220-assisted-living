@@ -10,6 +10,8 @@ public class Topics {
     public static final String MOVEMENT_SAFETY = "movement/safety";
     public static final String SMOKE_SAFETY = "smoke/safety";
     public static final String HOME_SAFETY = "home/safety";
-    public static final String ALARM = "alarm";
+    public static final String ALARM = "aalsalarm";
     public static final String SECURITY = "security";
+    public static final String DASHBOARD = "aalsdash";
+    
 }

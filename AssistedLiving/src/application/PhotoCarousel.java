@@ -24,13 +24,16 @@ public class PhotoCarousel implements MqttCallback {
 	int qos;
 	MqttClient publishclient, receiveclient;
 	MemoryPersistence persistence;
+	ArrayList<String> imgdb;
 
 	public PhotoCarousel() {
 		int qos = 2;
 
 		String clientId = "PhotoCarousel";
 		persistence = new MemoryPersistence();
-
+		
+		imgdb = new ArrayList<String>();
+		
 		try {
 			receiveclient = new MqttClient(Topics.BROKER_URL, MqttClient.generateClientId());
 			MqttConnectOptions connOpts = new MqttConnectOptions();
@@ -73,8 +76,8 @@ public class PhotoCarousel implements MqttCallback {
 
 	@Override
 	public void messageArrived(String topic, MqttMessage message) throws Exception {
-
-		
+			if (topic.equals("uploadphoto"))
+				imgdb.add(message.toString());
 		}
 
 	

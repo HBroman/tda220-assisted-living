@@ -44,9 +44,8 @@ public class HomeSecurity implements MqttCallback {
 			MqttConnectOptions connOpts = new MqttConnectOptions();
 			connOpts.setCleanSession(true);
 			receiveclient.setCallback(this);
-			System.out.println("Connecting to broker: " + broker);
 			receiveclient.connect(connOpts);
-			System.out.println("Connected");
+			System.out.println("Secrity In Connected");
 			receiveclient.subscribe("security"); // sub to security channel
 
 		} catch (MqttException me) {
@@ -64,9 +63,8 @@ public class HomeSecurity implements MqttCallback {
 			MqttConnectOptions connOpts = new MqttConnectOptions();
 			connOpts.setCleanSession(false);
 			publishclient.setCallback(this);
-			System.out.println("Connecting to broker: " + broker);
 			publishclient.connect(connOpts);
-			System.out.println("Connected");
+			System.out.println("Security Out Connected");
 
 		} catch (MqttException me) {
 			System.out.println("reason " + me.getReasonCode());
@@ -81,6 +79,7 @@ public class HomeSecurity implements MqttCallback {
 
 	@Override
 	public void messageArrived(String topic, MqttMessage message) throws Exception {
+		System.out.println("Security received: " + topic + "   " + message);
 		String[] msgarray = message.toString().split("/");
 		switch (msgarray[0]) {
 		case "lock":
@@ -97,7 +96,7 @@ public class HomeSecurity implements MqttCallback {
 				publishString("lock"+msgarray[2], "unlock");
 			break;
 		case "update":
-			publishString("dashboard", "update/"+msgarray[1]+"/"+msgarray[2]);
+			publishString(Topics.DASHBOARD, "update/"+msgarray[1]+"/"+msgarray[2]);
 			break;
 		case "holidaymode":
 			if (msgarray[1].equals("on"))
@@ -106,7 +105,7 @@ public class HomeSecurity implements MqttCallback {
 					holidaymode = (holidaymode ? false : true);
 			else
 				holidaymode = false;
-			publishString("dashboard", "update/holidaymode/"+(holidaymode ? "true" : "false"));
+			publishString(Topics.DASHBOARD, "update/holidaymode/"+(holidaymode ? "true" : "false"));
 			break;
 		case "movement":
 			if (msgarray[2].equals("true") && holidaymode == true)
