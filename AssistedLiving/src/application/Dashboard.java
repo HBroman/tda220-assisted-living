@@ -175,7 +175,6 @@ public class Dashboard implements MqttCallback {
 	}
 	
 	public void saveLogic(String logic) {
-		System.out.println("adoijasdijasdpijadpoadpoajdpaodjapdjopj");
 		publishString("addcompositelogic", logic);
 	}
 
