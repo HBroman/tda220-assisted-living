@@ -173,6 +173,11 @@ public class Dashboard implements MqttCallback {
 			System.out.println("ACCESS DENIED");
 
 	}
+	
+	public void saveLogic(String logic) {
+		System.out.println("adoijasdijasdpijadpoadpoajdpaodjapdjopj");
+		publishString("addcompositelogic", logic);
+	}
 
 	public void toggleHoliday() {
 		if (token.homesecurity) {
@@ -194,6 +199,23 @@ public class Dashboard implements MqttCallback {
 		}
 		else
 			System.out.println("ACCESS DENIED");
+	}
+	
+	private void publishString(String topic, String strmessage) {
+        try {
+            MqttMessage message = new MqttMessage(strmessage.getBytes());
+            message.setQos(qos);
+            publishclient.publish(topic, message);
+            
+
+        } catch(MqttException me) {
+            System.out.println("reason "+me.getReasonCode());
+            System.out.println("msg "+me.getMessage());
+            System.out.println("loc "+me.getLocalizedMessage());
+            System.out.println("cause "+me.getCause());
+            System.out.println("excep "+me);
+            me.printStackTrace();
+        }
 	}
 
 	public void closeConnection() {

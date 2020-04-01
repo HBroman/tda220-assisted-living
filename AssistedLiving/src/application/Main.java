@@ -51,7 +51,7 @@ public class Main extends Application {
 		LockController lock1 = new LockController("1");
 		LockController lock2 = new LockController("2");
 		LockController lock3 = new LockController("3");
-		
+		CompositeLogic complog = new CompositeLogic();
 
 
 		Thread thread1 = new Thread() {
@@ -315,6 +315,13 @@ public class Main extends Application {
 			cloghbox.getChildren().add(clogbutton);
 			cloghbox.getChildren().add(logicfield);
 			tab3.setContent(cloghbox);
+			
+			clogbutton.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent e) {
+					dash.saveLogic(logicfield.getText());
+				}
+			});
 
 			// -------------- PHOTOS TAB -----------------
 			Tab tab4 = new Tab("Photos", new Label("Photos"));
