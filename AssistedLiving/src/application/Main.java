@@ -43,11 +43,7 @@ public class Main extends Application {
 	Dashboard dash;
 	AccessToken token; 
 	Authentication auth;
-	FakeDistributedSystems fds;
 	
-	public void startSensors() throws MqttException {
-		fds = new FakeDistributedSystems();
-	}
 
 	@Override
 	public void start(Stage primaryStage) {
@@ -55,9 +51,6 @@ public class Main extends Application {
 		try {
 
 			dash = new Dashboard(this);
-
-			startSensors();
-			MedicalDataStorage healthStorage = new MedicalDataStorage(); //the data from the medical device
 			TabPane tabPane = new TabPane();
 
 			// login window
