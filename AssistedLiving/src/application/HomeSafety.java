@@ -44,28 +44,29 @@ public class HomeSafety implements MqttCallback {
     private void sendSmokeAlarm() throws MqttException {
 
         final MqttTopic dataTopic = PUBSmokemqttClient.getTopic(Topics.ALARM);
-        
 
-        while(true) {
-            String msg = "";
-            for(int i = 0; i <allSensors.size(); i++){
-                int sensorData = allSensors.get(i).getSensorData();
-                if(sensorData == 1){
-                    msg = "alarm/" + allSensors.get(i).sensorName;
-                    String finalMsg = msg;
-                    Thread thread = new Thread() {
-                        public void run() {
-                            try {
+
+        Thread thread = new Thread() {
+            public void run() {
+                try {
+                    while(true) {
+                        String msg = "";
+                        for(int i = 0; i <allSensors.size(); i++){
+                            Thread.sleep(5000);
+                            int sensorData = allSensors.get(i).getSensorData();
+                                msg = "alarm/" + allSensors.get(i).sensorName;
+                                String finalMsg = msg;
                                 dataTopic.publish(new MqttMessage(finalMsg.getBytes()));
-                            } catch (MqttException e) {
-                                e.printStackTrace();
-                            }
+
                         }
-                    };
-                    thread.start();
+                    }
+                } catch (MqttException | InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
-        }
+        };
+        thread.start();
+
     }
 
     public void sendMovementAlarm() throws MqttException {
